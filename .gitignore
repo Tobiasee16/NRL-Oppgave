@@ -1,0 +1,35 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+Debug/
+Release/
+x64/
+x86/
+
+# ASP.NET & IIS
+appsettings.*.local.json
+secrets.json
+
+# Docker
+**/.docker/
+docker-compose.override.yml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Logs
+*.log
+
+# OS
+*.DS_Store
+Thumbs.db
+ehthumbs.db
