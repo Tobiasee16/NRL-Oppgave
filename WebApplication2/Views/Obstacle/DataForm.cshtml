@@ -1,0 +1,122 @@
+﻿@model WebApplication2.Models.ObstacleData
+@{
+    Layout = null; // Viktig: ingen _Layout.cshtml
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>Obstacle Registration</title>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+    <header class="w-full border-b bg-white">
+        <div class="mx-auto max-w-5xl px-4 py-4">
+            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold tracking-tight">WebApplication2</a>
+        </div>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div class="px-6 py-5 border-b border-gray-100">
+                <h1 class="text-2xl font-semibold tracking-tight">Obstacle Registration</h1>
+                <p class="mt-1 text-sm text-gray-600">Please register an obstacle below.</p>
+            </div>
+
+            <form asp-action="DataForm" method="post" class="px-6 py-6 space-y-6">
+                <!-- Valideringsoppsummering -->
+                <div asp-validation-summary="ModelOnly"
+                     class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+                     data-valmsg-summary="true"></div>
+
+                <!-- Obstacle Name -->
+                <div class="space-y-1">
+                    <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800">Obstacle name</label>
+                    <input asp-for="ObstacleName"
+                           placeholder="e.g., Fallen tree"
+                           class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
+                                  placeholder:text-gray-400 shadow-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
+                    <span asp-validation-for="ObstacleName" class="block text-sm text-red-600"></span>
+                </div>
+
+                <!-- Obstacle Height (m) -->
+                <div class="space-y-1">
+                    <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800">Obstacle height</label>
+                    <div class="flex">
+                        <input asp-for="ObstacleHeight"
+                               type="number" min="0" step="0.01"
+                               placeholder="e.g., 1.75"
+                               class="w-full rounded-l-lg border border-gray-300 bg-white px-3 py-2
+                                      placeholder:text-gray-400 shadow-sm
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
+                        <span class="inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-gray-600">
+                            m
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500">Enter height in <strong>meters</strong>. Minimum 0, decimals allowed.</p>
+                    <span asp-validation-for="ObstacleHeight" class="block text-sm text-red-600"></span>
+                </div>
+
+                <!-- Description (max 2000 chars) -->
+                <div class="space-y-1">
+                    <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800">Description</label>
+                    <textarea asp-for="ObstacleDescription"
+                              id="obstacleDesc" rows="4" maxlength="2000"
+                              placeholder="Short description..."
+                              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
+                                     placeholder:text-gray-400 shadow-sm
+                                     focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"></textarea>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>Max 2000 characters.</span>
+                        <span id="descCounter">2000 characters remaining</span>
+                    </div>
+                    <span asp-validation-for="ObstacleDescription" class="block text-sm text-red-600"></span>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button type="submit"
+                            class="inline-flex justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-white font-medium
+                                   shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
+                        Submit data
+                    </button>
+                    <a asp-action="Index" asp-controller="Home"
+                       class="inline-flex justify-center rounded-lg border border-gray-300 px-5 py-2.5 text-gray-800
+                              hover:bg-gray-50">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="mx-auto max-w-5xl px-4 py-8 text-sm text-gray-500">
+        © @DateTime.Now.Year — WebApplication2
+    </footer>
+
+    <!-- Klientvalidering (bruker standard _ValidationScriptsPartial fra templaten) -->
+    <partial name="_ValidationScriptsPartial" />
+
+    <!-- Tegn-teller -->
+    <script>
+        (function () {
+            const ta = document.getElementById('obstacleDesc');
+            const counter = document.getElementById('descCounter');
+            if (!ta || !counter) return;
+            const max = parseInt(ta.getAttribute('maxlength') || '2000', 10);
+            function updateCounter() {
+                const remaining = Math.max(0, max - ta.value.length);
+                counter.textContent = remaining + ' characters remaining';
+            }
+            ta.addEventListener('input', updateCounter);
+            updateCounter();
+        })();
+    </script>
+</body>
+</html>

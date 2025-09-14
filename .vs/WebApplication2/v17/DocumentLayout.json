@@ -7,28 +7,28 @@
       "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\models\\obstacledata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\views\\obstacle\\dataform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\views\\obstacle\\dataform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\controllers\\obstaclecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\controllers\\obstaclecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\views\\obstacle\\overview.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\views\\obstacle\\overview.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\views\\home\\dataform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\views\\home\\dataform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\controllers\\obstacles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\controllers\\obstacles.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{81DDED9D-158B-E303-5F62-77A2896D2A5A}|docker-compose.dcproj|solutionrelative:docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\views\\home\\overview.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|solutionrelative:webapplication2\\views\\home\\overview.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{309AAD61-8AAC-4DAD-A825-9055F97B8C6D}|WebApplication2\\WebApplication2.csproj|c:\\users\\enged\\source\\repos\\tobiasee16\\nrl-oppgave\\webapplication2\\webapplication2.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
@@ -42,24 +42,32 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 6,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
               "Title": "Overview.cshtml",
-              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\Overview.cshtml",
-              "RelativeDocumentMoniker": "WebApplication2\\Views\\Home\\Overview.cshtml",
-              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\Overview.cshtml",
-              "RelativeToolTip": "WebApplication2\\Views\\Home\\Overview.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAGAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Obstacle\\Overview.cshtml",
+              "RelativeDocumentMoniker": "WebApplication2\\Views\\Obstacle\\Overview.cshtml",
+              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Obstacle\\Overview.cshtml",
+              "RelativeToolTip": "WebApplication2\\Views\\Obstacle\\Overview.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-14T20:21:06.552Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "HomeController.cs",
               "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "WebApplication2\\Controllers\\HomeController.cs",
@@ -72,26 +80,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Index.cshtml",
               "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\Index.cshtml",
               "RelativeDocumentMoniker": "WebApplication2\\Views\\Home\\Index.cshtml",
               "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\Index.cshtml",
               "RelativeToolTip": "WebApplication2\\Views\\Home\\Index.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAABsAAAAAAAAAAAAAADYAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-14T20:04:02.183Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "DataForm.cshtml",
-              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\DataForm.cshtml",
-              "RelativeDocumentMoniker": "WebApplication2\\Views\\Home\\DataForm.cshtml",
-              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Home\\DataForm.cshtml",
-              "RelativeToolTip": "WebApplication2\\Views\\Home\\DataForm.cshtml",
-              "ViewState": "AgIAAC0AAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Obstacle\\DataForm.cshtml",
+              "RelativeDocumentMoniker": "WebApplication2\\Views\\Obstacle\\DataForm.cshtml",
+              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Views\\Obstacle\\DataForm.cshtml",
+              "RelativeToolTip": "WebApplication2\\Views\\Obstacle\\DataForm.cshtml",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAAAHoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-09-14T19:49:25.704Z",
               "EditorCaption": ""
@@ -104,27 +112,27 @@
               "RelativeDocumentMoniker": "WebApplication2\\Models\\ObstacleData.cs",
               "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Models\\ObstacleData.cs",
               "RelativeToolTip": "WebApplication2\\Models\\ObstacleData.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-14T19:46:56.806Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Obstacles.cs",
-              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Controllers\\Obstacles.cs",
-              "RelativeDocumentMoniker": "WebApplication2\\Controllers\\Obstacles.cs",
-              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Controllers\\Obstacles.cs",
-              "RelativeToolTip": "WebApplication2\\Controllers\\Obstacles.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "ObstacleController.cs",
+              "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Controllers\\ObstacleController.cs",
+              "RelativeDocumentMoniker": "WebApplication2\\Controllers\\ObstacleController.cs",
+              "ToolTip": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\WebApplication2\\Controllers\\ObstacleController.cs",
+              "RelativeToolTip": "WebApplication2\\Controllers\\ObstacleController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-14T19:27:35.902Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "docker-compose.yml",
               "DocumentMoniker": "C:\\Users\\enged\\source\\repos\\Tobiasee16\\NRL-Oppgave\\docker-compose.yml",
               "RelativeDocumentMoniker": "docker-compose.yml",
