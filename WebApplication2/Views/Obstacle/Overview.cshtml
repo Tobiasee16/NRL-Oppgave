@@ -1,25 +1,48 @@
 ﻿@model WebApplication2.Models.ObstacleData
 
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+<div class="mx-auto max-w-3xl px-4 py-8">
+    <h1 class="text-2xl font-semibold mb-4">Overview</h1>
+    <p class="text-gray-700 mb-6">Thank you for registering an obstacle.</p>
 
-<div>
-    <h1>Overview</h1>
-    <p>Thank you for registering an obstacle</p>
+    <div class="bg-white rounded-xl shadow p-6 space-y-2 mb-6 border">
+        <p><strong>Name:</strong> @Model.ObstacleName</p>
+        <p><strong>Height (m):</strong> @Model.ObstacleHeight</p>
+        <p><strong>Description:</strong> @Model.ObstacleDescription</p>
+    </div>
 
-    <p>
-        @Model.ObstacleName
-    </p>
+    @if (!string.IsNullOrWhiteSpace(Model.GeometryGeoJson))
+    {
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+        <div id="map-view" class="w-full rounded-xl shadow border" style="height:420px;"></div>
 
-    <p>
-        @Model.ObstacleHeight
-    </p>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+            const map = L.map('map-view').setView([59.9139, 10.7522], 12);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
 
-    <p>
-        @Model.ObstacleDescription
-    </p>
+            try {
+                const raw = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.GeometryGeoJson));
+                if (raw) {
+                    const gj = JSON.parse(raw);
+                    const layer = L.geoJSON(gj, { style: { color: '#16a34a' } }).addTo(map);
+                    try { map.fitBounds(layer.getBounds(), { padding: [20, 20] }); } catch {}
+                }
+            } catch(e) {
+                console.error('Invalid GeoJSON', e);
+            }
+        </script>
+    }
+    else
+    {
+        <p class="text-gray-600">No map geometry was submitted.</p>
+    }
+
+    <div class="mt-6">
+        <a asp-controller="Obstacle" asp-action="DataForm" class="text-blue-600 underline">Register another</a>
+        <span class="mx-2 text-gray-400">|</span>
+        <a asp-controller="Home" asp-action="Index" class="text-blue-600 underline">Home</a>
+    </div>
 </div>
-

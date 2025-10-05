@@ -5,12 +5,6 @@ namespace WebApplication2.Controllers
 {
     public class ObstacleController : Controller
     {
-        //public IActionResult Index()
-        //{
-        //    return View();
-        // }
-
-        // blir kalt etter at vi trykker på "Register Obstacle" lenken i index viewet
         [HttpGet]
         public ActionResult DataForm()
         {
@@ -18,12 +12,23 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult DataForm(ObstacleData obstacledata)
         {
             if (!ModelState.IsValid)
             {
                 return View(obstacledata);
             }
+
+            // Hvis dere vil kreve kart:
+            // if (string.IsNullOrWhiteSpace(obstacledata.GeometryGeoJson))
+            // {
+            //     ModelState.AddModelError(nameof(obstacledata.GeometryGeoJson), "Please draw the location/area on the map.");
+            //     return View(obstacledata);
+            // }
+
+            // TODO: Lagre i DB hvis ønskelig (GeometryGeoJson som TEXT/LONGTEXT)
+
             return View("Overview", obstacledata);
         }
     }

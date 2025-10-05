@@ -15,9 +15,15 @@ namespace WebApplication2.Models
         [Required(ErrorMessage = "Description is required.")]
         [StringLength(2000, ErrorMessage = "Description cannot exceed 2000 characters.")]
         public string ObstacleDescription { get; set; } = string.Empty;
+
+        // NEW: GeoJSON (FeatureCollection) for tegnet geometri i kartet
+        public string? GeometryGeoJson { get; set; }
+        // Hvis dere vil gjøre kart obligatorisk:
+        // [Required(ErrorMessage = "Please draw the location/area on the map.")]
+        // public string GeometryGeoJson { get; set; } = string.Empty;
     }
 
-    // Egendefinert attributt for å telle ord
+    // Egendefinert attributt for å telle ord (beholdt uendret)
     public class MaxWordsAttribute : ValidationAttribute
     {
         private readonly int _maxWords;
