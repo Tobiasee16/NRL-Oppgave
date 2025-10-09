@@ -17,3 +17,5 @@ networks:
   appnet: #Legge til appnet nettverket som er ekstern nettverk
     external: true
     name: appnet #Legge til navn på nettverket
+
+
