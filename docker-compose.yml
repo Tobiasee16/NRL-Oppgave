@@ -1,48 +1,21 @@
 version: "3.9"
 
 services:
-  mariadb:
-    image: mariadb:11
-    container_name: mariadbcontainer
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: 1605
-      MYSQL_DATABASE: appdb
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppwd
-    ports:
-      - "3305:3306" # valgfritt; kun hvis du vil koble til DB fra Mac direkte
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    networks:
-      - appnet
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p1605"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-
   webapplication2:
     image: ${DOCKER_REGISTRY-}webapplication2
     build:
       context: .
       dockerfile: WebApplication2/Dockerfile
     ports:
-      - "5001:8080" 
+      - "5000:8080" # 5000 port tilhører din local host maskin (laptop/server). 8080 port tilhører kontaineren som applikasjonen hører på. Docker compose tar kontainer port 8080 og gjør den tilgjengelig fra host port 5000 
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=mariadbcontainer;Port=3306;Database=appdb;User=appuser;Password=apppwd;SslMode=None
-    depends_on:
-      mariadb:
-        condition: service_healthy
+      - ConnectionStrings__DefaultConnection=server=mariadbcontainer;port=3306;database=obstaclesdb;user=root;password=1605;SslMode=None;
     networks:
-      - appnet
-
+      - appnet #Koble applikasjonen til appnet nettverket
 networks:
-  appnet:
+  appnet: #Legge til appnet nettverket som er ekstern nettverk
     external: true
-    name: appnet
+    name: appnet #Legge til navn på nettverket
 
-volumes:
-  mariadb_data:
 
