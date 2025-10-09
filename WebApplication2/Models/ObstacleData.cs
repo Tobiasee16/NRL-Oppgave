@@ -4,6 +4,8 @@ namespace WebApplication2.Models
 {
     public class ObstacleData
     {
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "Obstacle name is required.")]
         [StringLength(100, ErrorMessage = "Obstacle name cannot be longer than 100 characters.")]
         public string ObstacleName { get; set; } = string.Empty;
@@ -16,11 +18,21 @@ namespace WebApplication2.Models
         [StringLength(2000, ErrorMessage = "Description cannot exceed 2000 characters.")]
         public string ObstacleDescription { get; set; } = string.Empty;
 
+        // 📍 Enkeltpunkt (for klikk i kart)
+        [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90.")]
+        public double? Latitude { get; set; }
+
+        [Range(-180, 180, ErrorMessage = "Longitude must be between -180 and 180.")]
+        public double? Longitude { get; set; }
+
         // NEW: GeoJSON (FeatureCollection) for tegnet geometri i kartet
+        [Required(ErrorMessage = "Please draw the location/area on the map.")]
         public string? GeometryGeoJson { get; set; }
-        // Hvis dere vil gjøre kart obligatorisk:
-        // [Required(ErrorMessage = "Please draw the location/area on the map.")]
-        // public string GeometryGeoJson { get; set; } = string.Empty;
+
+        public DateTime CreatedAt { get; set; }
+
+
+
     }
 
     // Egendefinert attributt for å telle ord (beholdt uendret)

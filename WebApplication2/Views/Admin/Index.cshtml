@@ -1,0 +1,165 @@
+﻿@model IEnumerable<WebApplication2.Models.ObstacleData>
+@using System.Text.Json
+@{
+    Layout = null;
+    ViewData["Title"] = "Admin – Obstacles";
+    var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>@ViewData["Title"]</title>
+    <style>
+        .mini-map {
+            width: 180px;
+            height: 120px;
+            border-radius: .75rem;
+        }
+
+        .map-skel {
+            background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%);
+            background-size: 400% 100%;
+            animation: sh 1.4s ease infinite;
+        }
+
+        @@keyframes sh {
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <header class="w-full border-b bg-white">
+        <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold">WebApplication2</a>
+            <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
+                <a asp-controller="Home" asp-action="Index" class="hover:text-blue-600">Home</a>
+                <a asp-controller="Obstacle" asp-action="DataForm" class="hover:text-blue-600">Register</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">All Obstacles</h1>
+        <a asp-action="MapAll"
+           class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 font-medium
+            shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
+            View All on Map
+        </a>
+    </div>
+
+
+    <main class="mx-auto max-w-6xl px-4 py-8">
+        <h1 class="text-2xl font-semibold mb-6">All Obstacles</h1>
+
+        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <table class="min-w-full">
+                <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">ID</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Name</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Height</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Created</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Map</th>
+                        <th class="px-4 py-3 text-left text-sm font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @{
+                        var idx = 0;
+                    }
+                    @foreach (var o in Model)
+                    {
+                        var mapId = $"map_{idx++}";
+                        var gj = string.IsNullOrWhiteSpace(o.GeometryGeoJson) ? null : o.GeometryGeoJson;
+                        var lat = o.Latitude;
+                        var lng = o.Longitude;
+
+                        <tr class="hover:bg-gray-50 align-top">
+                            <td class="px-4 py-3">@o.Id</td>
+                            <td class="px-4 py-3">
+                                <div class="font-medium">@o.ObstacleName</div>
+                                <div class="text-xs text-gray-500 line-clamp-2">@o.ObstacleDescription</div>
+                            </td>
+                            <td class="px-4 py-3">@o.ObstacleHeight</td>
+                            <td class="px-4 py-3">@o.CreatedAt</td>
+                            <td class="px-4 py-3">
+                                <div id="@mapId"
+                                     class="mini-map map-skel"
+                                     data-geo='@Html.Raw(JsonSerializer.Serialize(gj ?? "", jsonOpts))'
+                                     data-lat='@Html.Raw(JsonSerializer.Serialize(lat))'
+                                     data-lng='@Html.Raw(JsonSerializer.Serialize(lng))'>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex gap-2">
+                                    <a asp-controller="Obstacle" asp-action="Overview" asp-route-id="@o.Id"
+                                       class="text-blue-600 hover:underline">Details</a>
+                                    @* Legg til Edit/Delete her hvis ønskelig *@
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500">
+        © @DateTime.Now.Year — WebApplication2
+    </footer>
+
+    <script>
+        // Lazy-initialiser mini-kart kun når de er i viewport
+        const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const maps = Array.from(document.querySelectorAll('.mini-map'));
+
+        function initMap(div){
+          if(div.dataset.inited) return;
+          div.dataset.inited = "1";
+          div.classList.remove('map-skel');
+
+          const lat = JSON.parse(div.getAttribute('data-lat') || '0');
+          const lng = JSON.parse(div.getAttribute('data-lng') || '0');
+          let gjRaw = div.getAttribute('data-geo');
+          let gj = null;
+          try { gj = JSON.parse(gjRaw || '""'); if (typeof gj === 'string') gj = gj ? JSON.parse(gj) : null; } catch {}
+
+          const m = L.map(div, { zoomControl:false, attributionControl:false, dragging:false, scrollWheelZoom:false, doubleClickZoom:false, boxZoom:false, keyboard:false });
+          L.tileLayer(tiles, { maxZoom:19 }).addTo(m);
+
+          // Tegn GeoJSON hvis vi har; ellers marker ved lat/lng (om satt)
+          if (gj) {
+            const layer = L.geoJSON(gj, { style:{ color:'#2563eb', weight:3 } }).addTo(m);
+            try {
+              const b = layer.getBounds();
+              if (b && b.isValid()) { m.fitBounds(b, { padding:[5,5] }); }
+              else { m.setView([63.4,10.4], 5); }
+            } catch { m.setView([63.4,10.4], 5); }
+          } else if ((lat || lng) && !Number.isNaN(lat) && !Number.isNaN(lng)) {
+            L.marker([lat, lng]).addTo(m);
+            m.setView([lat, lng], 13);
+          } else {
+            m.setView([63.4,10.4], 5); // fallback Norge
+          }
+        }
+
+        const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries=>{
+          entries.forEach(e => { if(e.isIntersecting) initMap(e.target); });
+        }, { rootMargin: '200px' }) : null;
+
+        maps.forEach(div => { if (io) io.observe(div); else initMap(div); });
+    </script>
+</body>
+</html>

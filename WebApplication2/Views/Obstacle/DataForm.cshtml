@@ -1,6 +1,7 @@
 ﻿@model WebApplication2.Models.ObstacleData
 @{
-    Layout = null; // Viktig: ingen _Layout.cshtml
+    Layout = null;
+    ViewData["Title"] = "Obstacle Registration";
 }
 
 <!DOCTYPE html>
@@ -9,38 +10,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Tailwind (CDN) -->
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Leaflet CSS/Draw CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+    <!-- Leaflet & Leaflet Draw -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
-    <title>Obstacle Registration</title>
+    <title>@ViewData["Title"]</title>
+    <style>
+        #map {
+            height: 420px;
+        }</style>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-900">
-    <header class="w-full border-b bg-white">
-        <div class="mx-auto max-w-5xl px-4 py-4">
-            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold tracking-tight">WebApplication2</a>
-        </div>
-    </header>
 
-    <main class="mx-auto max-w-3xl px-4 py-8 sm:py-10">
+<body class="min-h-screen bg-gray-50 text-gray-900">
+    <main class="mx-auto max-w-3xl px-4 py-10">
         <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
             <div class="px-6 py-5 border-b border-gray-100">
                 <h1 class="text-2xl font-semibold tracking-tight">Obstacle Registration</h1>
-                <p class="mt-1 text-sm text-gray-600">Please register an obstacle below.</p>
+                <p class="mt-1 text-sm text-gray-600">Click or draw on the map to set location.</p>
             </div>
 
             <form asp-action="DataForm" method="post" class="px-6 py-6 space-y-6">
                 @Html.AntiForgeryToken()
 
-                <!-- Valideringsoppsummering -->
+                <!-- Validation summary -->
                 <div asp-validation-summary="ModelOnly"
-                     class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
+                     class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
                      data-valmsg-summary="true"></div>
 
-                <!-- Obstacle Name -->
+                <!-- Name -->
                 <div class="space-y-1">
                     <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800">Obstacle name</label>
                     <input asp-for="ObstacleName"
@@ -48,10 +50,10 @@
                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
                                   placeholder:text-gray-400 shadow-sm
                                   focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
-                    <span asp-validation-for="ObstacleName" class="block text-sm text-red-600"></span>
+                    <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
                 </div>
 
-                <!-- Obstacle Height (m) -->
+                <!-- Height -->
                 <div class="space-y-1">
                     <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800">Obstacle height</label>
                     <div class="flex">
@@ -61,19 +63,16 @@
                                class="w-full rounded-l-lg border border-gray-300 bg-white px-3 py-2
                                       placeholder:text-gray-400 shadow-sm
                                       focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
-                        <span class="inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-gray-600">
-                            m
-                        </span>
+                        <span class="inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-gray-600">m</span>
                     </div>
-                    <p class="text-xs text-gray-500">Enter height in <strong>meters</strong>. Minimum 0, decimals allowed.</p>
-                    <span asp-validation-for="ObstacleHeight" class="block text-sm text-red-600"></span>
+                    <p class="text-xs text-gray-500">Enter height in meters. Min 0, decimals allowed.</p>
+                    <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600"></span>
                 </div>
 
-                <!-- Description (max 2000 chars) -->
+                <!-- Description -->
                 <div class="space-y-1">
                     <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800">Description</label>
-                    <textarea asp-for="ObstacleDescription"
-                              id="obstacleDesc" rows="4" maxlength="2000"
+                    <textarea asp-for="ObstacleDescription" id="obstacleDesc" rows="4" maxlength="2000"
                               placeholder="Short description..."
                               class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
                                      placeholder:text-gray-400 shadow-sm
@@ -82,22 +81,34 @@
                         <span>Max 2000 characters.</span>
                         <span id="descCounter">2000 characters remaining</span>
                     </div>
-                    <span asp-validation-for="ObstacleDescription" class="block text-sm text-red-600"></span>
+                    <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
                 </div>
 
-                <!-- === KART START === -->
+                <!-- Map -->
                 <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-800">Mark location/area on the map</label>
-
-                    <div id="map" class="w-full rounded-xl shadow border" style="height:420px;"></div>
-
-                    <!-- Skjult input som fylles med samlet GeoJSON (FeatureCollection) -->
+                    <label class="block text-sm font-medium text-gray-800">Select location/area on map</label>
+                    <div id="map" class="rounded-xl shadow border"></div>
                     <input type="hidden" asp-for="GeometryGeoJson" id="geojson" />
-                    <span asp-validation-for="GeometryGeoJson" class="text-red-600 text-sm"></span>
+                    <span asp-validation-for="GeometryGeoJson" class="text-sm text-red-600"></span>
                 </div>
-                <!-- === KART SLUTT === -->
 
-                <!-- Actions -->
+                <!-- Coordinates (auto-filled) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label asp-for="Latitude" class="block text-sm font-medium text-gray-800">Latitude</label>
+                        <input asp-for="Latitude" id="lat"
+                               class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm"
+                               readonly />
+                    </div>
+                    <div>
+                        <label asp-for="Longitude" class="block text-sm font-medium text-gray-800">Longitude</label>
+                        <input asp-for="Longitude" id="lng"
+                               class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm"
+                               readonly />
+                    </div>
+                </div>
+
+                <!-- Buttons -->
                 <div class="flex flex-col sm:flex-row gap-3 pt-2">
                     <button type="submit"
                             class="inline-flex justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-white font-medium
@@ -114,20 +125,11 @@
         </div>
     </main>
 
-    <footer class="mx-auto max-w-5xl px-4 py-8 text-sm text-gray-500">
-        © @DateTime.Now.Year — WebApplication2
-    </footer>
-
-    <!-- Klientvalidering -->
+    <!-- Validation -->
     <partial name="_ValidationScriptsPartial" />
 
-    <!-- Leaflet JS + Leaflet Draw JS (må lastes etter DOM) -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-
-    <!-- Kartlogikk -->
     <script>
-        // Tegn-teller for description
+        // Description counter
         (function () {
             const ta = document.getElementById('obstacleDesc');
             const counter = document.getElementById('descCounter');
@@ -141,17 +143,15 @@
             updateCounter();
         })();
 
-        // 1) Init-kart (Oslo-ish)
-        const map = L.map('map').setView([59.9139, 10.7522], 12);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Initialize map (Norway-centered)
+        const map = L.map('map').setView([63.4, 10.4], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; OpenStreetMap'
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 2) FeatureGroup for geometrier
         const drawnItems = new L.FeatureGroup().addTo(map);
 
-        // 3) Tegneverktøy
         const drawControl = new L.Control.Draw({
             position: 'topleft',
             draw: {
@@ -162,36 +162,57 @@
                 circle: false,
                 circlemarker: false
             },
-            edit: {
-                featureGroup: drawnItems,
-                remove: true
-            }
+            edit: { featureGroup: drawnItems, remove: true }
         });
         map.addControl(drawControl);
 
-        // 4) Oppdater skjult input med samlet FeatureCollection
-        function syncGeoJsonInput() {
-            const fc = { type: "FeatureCollection", features: [] };
-            drawnItems.eachLayer(layer => {
-                try { fc.features.push(layer.toGeoJSON()); } catch {}
-            });
-            document.getElementById('geojson').value = JSON.stringify(fc);
+        function setLatLngFromLayer(layer) {
+            let lat = null, lng = null;
+            if (typeof layer.getLatLng === 'function') {
+                const ll = layer.getLatLng();
+                lat = ll.lat; lng = ll.lng;
+            } else if (typeof layer.getBounds === 'function') {
+                const center = layer.getBounds().getCenter();
+                lat = center.lat; lng = center.lng;
+            }
+            if (lat !== null && lng !== null) {
+                document.getElementById('lat').value = lat.toFixed(6);
+                document.getElementById('lng').value = lng.toFixed(6);
+            }
         }
 
-        // 5) Events
+        function syncGeoJsonInput() {
+            const fc = { type: "FeatureCollection", features: [] };
+            let lastLayer = null;
+            drawnItems.eachLayer(layer => {
+                try {
+                    fc.features.push(layer.toGeoJSON());
+                    lastLayer = layer;
+                } catch { }
+            });
+            document.getElementById('geojson').value = JSON.stringify(fc);
+            if (lastLayer) setLatLngFromLayer(lastLayer);
+        }
+
         map.on(L.Draw.Event.CREATED, e => { drawnItems.addLayer(e.layer); syncGeoJsonInput(); });
-        map.on(L.Draw.Event.EDITED,  () => { syncGeoJsonInput(); });
+        map.on(L.Draw.Event.EDITED, () => { syncGeoJsonInput(); });
         map.on(L.Draw.Event.DELETED, () => { syncGeoJsonInput(); });
 
-        // 6) Gjenopprett ved valideringsfeil (postback)
         (function restoreIfAny() {
             const raw = document.getElementById('geojson').value;
             if (!raw) return;
             try {
                 const gj = JSON.parse(raw);
-                const layer = L.geoJSON(gj).addTo(drawnItems);
-                try { map.fitBounds(layer.getBounds(), { padding: [20, 20] }); } catch {}
-            } catch {}
+                const group = L.geoJSON(gj);
+                group.eachLayer(l => drawnItems.addLayer(l));
+                try {
+                    const bounds = group.getBounds();
+                    if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [20, 20] });
+                } catch { }
+                let last = null;
+                group.eachLayer(l => last = l);
+                if (last) setLatLngFromLayer(last);
+            } catch { }
         })();
     </script>
 </body>

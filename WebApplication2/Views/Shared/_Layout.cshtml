@@ -1,4 +1,13 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var controller = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "");
+    var action = (ViewContext.RouteData.Values["action"]?.ToString() ?? "");
+    string Active(string c, string? a = null) =>
+        controller.Equals(c, StringComparison.OrdinalIgnoreCase) &&
+        (a is null || action.Equals(a, StringComparison.OrdinalIgnoreCase))
+            ? "active" : "";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,37 +19,76 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WebApplication2</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div id="mainNav" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark @Active("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark @Active("Home", "Privacy")" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        </li>
+
+                        <!-- NYTT: direkte sti til Admin -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @Active("Admin", "Index")" asp-controller="Admin" asp-action="Index">Admin</a>
+                        </li>
+
+                        <!-- NYTT: lenke til registreringsskjema -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @Active("Obstacle", "DataForm")" asp-controller="Obstacle" asp-action="DataForm">
+                                Register Obstacle
+                            </a>
                         </li>
                     </ul>
+
+                    <!-- (valgfritt) høyreside – plass til login etc. -->
+                    <div class="d-flex"></div>
                 </div>
             </div>
         </nav>
+
+        <!-- Enkel breadcrumb basert på controller/action -->
+        <div class="bg-light border-bottom">
+            <div class="container py-2">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        @if (!controller.Equals("Home", StringComparison.OrdinalIgnoreCase) || !action.Equals("Index", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <li class="breadcrumb-item active" aria-current="page">
+                                @ViewData["Title"] ?? (controller + (action != "Index" ? $" / {action}" : ""))
+                            </li>
+                        }
+                    </ol>
+                </nav>
+            </div>
+        </div>
     </header>
+
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="py-3">
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - WebApplication2 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2025 - WebApplication2 -
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

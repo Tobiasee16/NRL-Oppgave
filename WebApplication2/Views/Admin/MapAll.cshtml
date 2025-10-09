@@ -1,0 +1,131 @@
+﻿@model IEnumerable<WebApplication2.Models.ObstacleData>
+@using System.Text.Json
+@{
+    Layout = null;
+    ViewData["Title"] = "Admin – All Obstacles on Map";
+    var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet + (valgfritt) MarkerCluster for bedre oversikt ved mange punkt -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <title>@ViewData["Title"]</title>
+  <style>
+    #map { height: 70vh; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <header class="w-full border-b bg-white">
+    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+      <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold">WebApplication2</a>
+      <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
+        <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Admin list</a>
+        <a asp-controller="Obstacle" asp-action="DataForm" class="hover:text-blue-600">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-4 py-8">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-semibold">All Obstacles on Map</h1>
+      <a asp-controller="Admin" asp-action="Index"
+         class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 font-medium
+                shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
+        Back to Admin
+      </a>
+    </div>
+
+    <div id="map" class="rounded-xl border shadow bg-white"></div>
+  </main>
+
+  <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500">
+    © @DateTime.Now.Year — WebApplication2
+  </footer>
+
+  <script>
+    const map = L.map('map').setView([63.4, 10.4], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const allGroup = L.featureGroup().addTo(map);
+    const markerCluster = L.markerClusterGroup({ showCoverageOnHover: false });
+
+    // Data fra server (serialisert trygt)
+    const items = @Html.Raw(JsonSerializer.Serialize(Model.Select(m => new {
+        id = m.Id,
+        name = m.ObstacleName,
+        height = m.ObstacleHeight,
+        desc = m.ObstacleDescription,
+        lat = m.Latitude,
+        lng = m.Longitude,
+        gj = m.GeometryGeoJson
+    }), jsonOpts));
+
+    // Legg alle features (GeoJSON først, ellers marker)
+    items.forEach(it => {
+      let added = false;
+
+      if (it.gj) {
+        try {
+          const gj = (typeof it.gj === 'string') ? JSON.parse(it.gj) : it.gj;
+          const layer = L.geoJSON(gj, {
+            style: { color: '#2563eb', weight: 3 }
+          });
+          layer.eachLayer(l => {
+            // popup per del-geometri
+            if (l.getBounds) {
+              l.bindPopup(`<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`);
+            } else if (l.getLatLng) {
+              l.bindPopup(`<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`);
+            }
+          });
+          layer.addTo(allGroup);
+          added = true;
+        } catch (e) { /* ugyldig GeoJSON – fall back under */ }
+      }
+
+      if (!added && typeof it.lat === 'number' && typeof it.lng === 'number' && (it.lat !== 0 || it.lng !== 0)) {
+        const m = L.marker([it.lat, it.lng]).bindPopup(
+          `<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`
+        );
+        markerCluster.addLayer(m);
+        added = true;
+      }
+    });
+
+    // MarkerCluster til kartet (etter at vi har lagt til markører)
+    if (markerCluster.getLayers().length > 0) {
+      allGroup.addLayer(markerCluster);
+    }
+
+    // Fit bounds (fallback hvis tomt)
+    try {
+      const b = allGroup.getBounds();
+      if (b && b.isValid()) {
+        map.fitBounds(b, { padding: [30, 30] });
+      } else {
+        map.setView([63.4, 10.4], 5);
+      }
+    } catch {
+      map.setView([63.4, 10.4], 5);
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"'`=\/]/g, ch => (
+        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[ch]
+      ));
+    }
+  </script>
+</body>
+</html>
