@@ -26,6 +26,17 @@ Applikasjonen følger MVC-mønsteret:
 - [Docker](https://www.docker.com/) installert
 - (Valgfritt) [.NET 6/7 SDK](https://dotnet.microsoft.com/en-us/download)
 
+### SQL for obstaclesdb
+CREATE TABLE IF NOT EXISTS obstacles (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    ObstacleName VARCHAR(100) NOT NULL,
+    ObstacleHeight DOUBLE NOT NULL CHECK (ObstacleHeight >= 0),
+    ObstacleDescription VARCHAR(2000) NOT NULL,
+    GeometryGeoJson LONGTEXT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
 ### Bygg og kjør i Docker
 ```bash
 # Bygg image
