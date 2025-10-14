@@ -1,32 +1,26 @@
-using MySqlConnector;
+using WebApplication2.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// MVC
 builder.Services.AddControllersWithViews();
 
-//Henter connection string fra “appsettings.json” filen
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-//Oppretter eninstans av MySqlConnection
-builder.Services.AddSingleton(new MySqlConnection(connectionString));
-
-
+// Repository (Dapper + MySqlConnector inni repo-klassen)
+builder.Services.AddSingleton<IDbConnectionFactory, MySqlConnectionFactory>();
+builder.Services.AddScoped<IObstacleRepository, ObstacleRepository>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -34,4 +28,3 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-

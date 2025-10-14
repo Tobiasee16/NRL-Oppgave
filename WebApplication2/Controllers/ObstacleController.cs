@@ -1,17 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication2.Models;
-using Dapper;
-using MySqlConnector;
+using WebApplication2.Data;
 
 namespace WebApplication2.Controllers
 {
     public class ObstacleController : Controller
     {
-        private readonly string _cs;
+        private readonly IObstacleRepository _repo;
 
-        public ObstacleController(IConfiguration config)
+        public ObstacleController(IObstacleRepository repo)
         {
-            _cs = config.GetConnectionString("DefaultConnection")!;
+            _repo = repo;
         }
 
         // GET: /Obstacle/DataForm
@@ -28,18 +27,7 @@ namespace WebApplication2.Controllers
 
             try
             {
-                await using var conn = new MySqlConnection(_cs);
-
-                const string insertSql = @"
-INSERT INTO `obstacles`
-  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson)
-VALUES
-  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson);
-SELECT LAST_INSERT_ID();";
-
-                var newId = await conn.ExecuteScalarAsync<int>(insertSql, obstacledata);
-
-                // PRG: redirect til GET-Overview for å unngå resubmits ved refresh
+                var newId = await _repo.InsertAsync(obstacledata);
                 return RedirectToAction(nameof(Overview), new { id = newId });
             }
             catch (Exception ex)
@@ -53,10 +41,7 @@ SELECT LAST_INSERT_ID();";
         [HttpGet]
         public async Task<IActionResult> Overview(int id)
         {
-            await using var conn = new MySqlConnection(_cs);
-            var row = await conn.QuerySingleOrDefaultAsync<ObstacleData>(
-                "SELECT * FROM `obstacles` WHERE Id = @id;", new { id });
-
+            var row = await _repo.GetByIdAsync(id);
             if (row is null) return NotFound();
             return View(row);
         }
@@ -65,11 +50,8 @@ SELECT LAST_INSERT_ID();";
         [HttpGet]
         public async Task<IActionResult> List()
         {
-            await using var conn = new MySqlConnection(_cs);
-            var items = await conn.QueryAsync<ObstacleData>(
-                "SELECT * FROM `obstacles` ORDER BY CreatedAt DESC;");
+            var items = await _repo.ListAsync();
             return View(items);
         }
     }
 }
-
