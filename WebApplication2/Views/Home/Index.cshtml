@@ -1,78 +1,45 @@
 ﻿@model string
 @{
-    Layout = null;
     ViewData["Title"] = "Home Page";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+@if (!string.IsNullOrEmpty(Model))
+{
+    <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
+        <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis me-1">✓</span>
+        <span>@Model</span>
+    </div>
+}
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+<section class="hero text-center">
+    <h1 class="display-5 fw-semibold mb-2">Welcome</h1>
+    <p class="text-muted mb-4">
+        Learn about <a href="https://learn.microsoft.com/aspnet/core" target="_blank" rel="noopener">building Web apps with ASP.NET Core</a>.
+    </p>
 
-    <title>@ViewData["Title"]</title>
-</head>
-<body class="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
-    <!-- Header -->
-    <header class="w-full border-b bg-white">
-        <div class="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold tracking-tight">WebApplication2</a>
-            <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
-                <a asp-action="Index" class="hover:text-blue-600">Home</a>
-                <a asp-action="Privacy" class="hover:text-blue-600">Privacy</a>
-                <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600 font-medium">Admin</a>
-            </nav>
-        </div>
-    </header>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+        <a asp-action="DataForm" asp-controller="Obstacle" class="btn btn-primary btn-lg px-4">
+            Register Obstacle
+        </a>
 
-    <!-- Main -->
-    <main class="flex-1 mx-auto max-w-3xl w-full px-4 py-10 sm:py-14">
-        <!-- Statusmelding -->
-        @if (!string.IsNullOrEmpty(Model))
+        @* Vis Admin-knapp bare når bruker er Admin *@
+        @if (User.IsInRole("Admin"))
         {
-            <div class="mb-6 rounded-lg px-4 py-3 text-sm font-medium
-                            @(Model.StartsWith("✅")
-                                              ? "bg-green-50 text-green-800 border border-green-200"
-                                              : "bg-red-50 text-red-800 border border-red-200")">
-            @Model
-        </div>
-                }
-
-        <!-- Velkomst -->
-        <div class="text-center">
-            <h1 class="text-3xl font-semibold tracking-tight mb-3">Welcome</h1>
-            <p class="text-gray-600">
-                Learn about
-                <a href="https://learn.microsoft.com/aspnet/core"
-                   class="text-blue-600 hover:underline">building Web apps with ASP.NET Core</a>.
-            </p>
-        </div>
-
-        <!-- CTA-knapper -->
-        <div class="text-center mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a asp-action="DataForm" asp-controller="Obstacle"
-               class="inline-flex items-center rounded-lg bg-blue-600 px-6 py-3 text-white font-medium
-                      shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition">
-                Register Obstacle
+            <a asp-action="Index" asp-controller="Admin" class="btn btn-outline-secondary px-4">
+                Admin Panel
             </a>
+        }
+    </div>
 
-            <a asp-action="Index" asp-controller="Admin"
-               class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-gray-800 font-medium
-                      shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
-                Go to Admin Panel
-            </a>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="w-full border-t bg-white">
-        <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-gray-500 text-center">
-            © @DateTime.Now.Year — WebApplication2
-        </div>
-    </footer>
-</body>
-</html>
-
+    @* Liten status for innlogging under CTA *@
+    <div class="mt-4 small text-muted">
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <span>Du er innlogget som <strong>@User.Identity!.Name</strong>.</span>
+        }
+        else
+        {
+            <span>Har du konto? Bruk lenkene oppe til høyre for å logge inn eller registrere deg.</span>
+        }
+    </div>
+</section>

@@ -18,80 +18,61 @@
     <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-0">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WebApplication2</a>
-
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div id="mainNav" class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark @Active("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark @Active("Home", "Privacy")" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-
-                        <!-- NYTT: direkte sti til Admin -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark @Active("Admin", "Index")" asp-controller="Admin" asp-action="Index">Admin</a>
-                        </li>
-
-                        <!-- NYTT: lenke til registreringsskjema -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark @Active("Obstacle", "DataForm")" asp-controller="Obstacle" asp-action="DataForm">
-                                Register Obstacle
-                            </a>
-                        </li>
-                    </ul>
-
-                    <!-- (valgfritt) høyreside – plass til login etc. -->
-                    <div class="d-flex"></div>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Enkel breadcrumb basert på controller/action -->
-        <div class="bg-light border-bottom">
-            <div class="container py-2">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item">
-                            <a asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (!controller.Equals("Home", StringComparison.OrdinalIgnoreCase) || !action.Equals("Index", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <li class="breadcrumb-item active" aria-current="page">
-                                @ViewData["Title"] ?? (controller + (action != "Index" ? $" / {action}" : ""))
-                            </li>
-                        }
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </header>
-
-    <div class="container">
-        <main role="main" class="py-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
         <div class="container">
-            &copy; 2025 - WebApplication2 -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+            <a class="navbar-brand fw-semibold letter-tight" asp-controller="Home" asp-action="Index">WebApplication2</a>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                    aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div id="mainNav" class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @Active("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Active("Home", "Privacy")" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Active("Obstacle", "DataForm")" asp-controller="Obstacle" asp-action="DataForm">
+                            Register Obstacle
+                        </a>
+                    </li>
+                    @* Vis Admin bare for Admin-rolle *@
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @Active("Admin", "Index")" asp-controller="Admin" asp-action="Index">Admin</a>
+                        </li>
+                    }
+                </ul>
+
+                @* Høyreside: standard Identity-partial (slik unngår vi duplikater) *@
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main class="py-4">
+    <div class="container">
+        @RenderBody()
+    </div>
+</main>
+
+<footer class="border-top text-muted py-3">
+    <div class="container small">
+        © @DateTime.Now.Year – WebApplication2 ·
+        <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

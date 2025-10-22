@@ -20,3 +20,19 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Hero spacing & general polish */
+.hero { padding: 4.5rem 0 3rem; }
+.letter-tight { letter-spacing: -0.2px; }
+
+/* Active nav-link – gjør aktiv side tydelig */
+.navbar .nav-link.active {
+  font-weight: 600;
+  border-bottom: 2px solid #0d6efd;
+}
+
+/* Små forbedringer for alert med ikon-badge */
+.badge.bg-success-subtle {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
