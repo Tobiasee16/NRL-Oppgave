@@ -13,14 +13,27 @@
 
 <section class="hero text-center">
     <h1 class="display-5 fw-semibold mb-2">Welcome</h1>
-    <p class="text-muted mb-4">
-        Learn about <a href="https://learn.microsoft.com/aspnet/core" target="_blank" rel="noopener">building Web apps with ASP.NET Core</a>.
-    </p>
-
+   
     <div class="d-flex flex-wrap justify-content-center gap-3">
-        <a asp-action="DataForm" asp-controller="Obstacle" class="btn btn-primary btn-lg px-4">
-            Register Obstacle
-        </a>
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <!-- Innlogget: rett til registreringsskjema -->
+            <a asp-action="DataForm"
+               asp-controller="Obstacle"
+               class="btn btn-primary btn-lg px-4">
+                Register obstacle
+            </a>
+        }
+        else
+        {
+            <!-- Ikke innlogget: send til Identity Login med retur til DataForm -->
+            <a asp-area="Identity"
+               asp-page="/Account/Login"
+               asp-route-returnUrl="@Url.Action("DataForm", "Obstacle")"
+               class="btn btn-primary btn-lg px-4">
+                Log in to register obstacle
+            </a>
+        }
 
         @* Vis Admin-knapp bare når bruker er Admin *@
         @if (User.IsInRole("Admin"))

@@ -1,5 +1,5 @@
 services:
-  web:
+  webapplication2:
     build:
       context: ./WebApplication2
       dockerfile: Dockerfile

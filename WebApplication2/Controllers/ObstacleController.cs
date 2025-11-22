@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication2.Models;
 using WebApplication2.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication2.Controllers
 {
+    [Authorize] // hele controlleren krever login
     public class ObstacleController : Controller
     {
         private readonly IObstacleRepository _repo;
@@ -48,6 +50,7 @@ namespace WebApplication2.Controllers
 
         // (Valgfritt) /Obstacle/List for admin/oversikt
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> List()
         {
             var items = await _repo.ListAsync();
