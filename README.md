@@ -36,5 +36,8 @@ CREATE TABLE IF NOT EXISTS obstacles (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+Admin bruker: admin@example.com 
+Passord: AdminPassw0rd!
+
 
 
