@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebApplication2.Data;
 using WebApplication2.Models;
-
+ 
+ // Henter alle hindere fra databasen og viser dem enten i en liste (Index) eller på kart (MapAll)
 namespace WebApplication2.Controllers
 {
     public class AdminController : Controller

@@ -1,6 +1,7 @@
 // ...existing code...
 using WebApplication2.Models;
 
+// Definerer hvilke databaseoperasjoner som finnes for hinder
 namespace WebApplication2.Data
 {
     public interface IObstacleRepository

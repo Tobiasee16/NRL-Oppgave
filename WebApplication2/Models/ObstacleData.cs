@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+// Modell som beskriver et hinder med posisjon, høyde og kart-geometri
 namespace WebApplication2.Models
 {
     public class ObstacleData

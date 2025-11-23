@@ -26,6 +26,8 @@ Applikasjonen følger MVC-mønsteret:
 - [Docker](https://www.docker.com/) installert
 - (Valgfritt) [.NET 6/7 SDK](https://dotnet.microsoft.com/en-us/download)
 
+docker exec -it nrl-oppgave-db mariadb -uroot -prootpass obstaclesdb
+
 ### SQL for obstaclesdb
 CREATE TABLE IF NOT EXISTS obstacles (
     Id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,11 +38,8 @@ CREATE TABLE IF NOT EXISTS obstacles (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+Admin bruker: admin@example.com 
+Passord: AdminPassw0rd!
 
-### Bygg og kjør i Docker
-```bash
-# Bygg image
-docker build -t mvc-app .
 
-# Start container
-docker run -p 8080:80 mvc-app
+
