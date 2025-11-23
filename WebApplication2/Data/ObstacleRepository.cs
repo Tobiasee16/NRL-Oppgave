@@ -19,9 +19,9 @@ namespace WebApplication2.Data
         {
             const string insertSql = @"
 INSERT INTO `obstacles`
-  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt)
+  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt, Status)
 VALUES
-  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt);
+  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt, @Status);
 SELECT LAST_INSERT_ID();";
 
             using var conn = _factory.CreateConnection();
@@ -46,5 +46,20 @@ SELECT LAST_INSERT_ID();";
             if (conn.State == ConnectionState.Closed) await conn.OpenAsync();
             return await conn.QueryAsync<ObstacleData>(sql);
         }
+
+        public async Task UpdateStatusAsync(int id, string status)
+        {
+            const string sql = "UPDATE obstacles SET Status = @Status WHERE Id = @Id;";
+            await using var conn = _factory.CreateConnection();
+            await conn.ExecuteAsync(sql, new { Id = id, Status = status });
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            const string sql = "DELETE FROM obstacles WHERE Id = @Id;";
+            await using var conn = _factory.CreateConnection();
+            await conn.ExecuteAsync(sql, new { Id = id });
+        }
+
     }
 }

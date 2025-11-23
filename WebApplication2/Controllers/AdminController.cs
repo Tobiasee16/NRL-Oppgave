@@ -13,6 +13,7 @@ namespace WebApplication2.Controllers
             _repo = repo;
         }
 
+        // Oversikt over alle rapporter
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -20,6 +21,25 @@ namespace WebApplication2.Controllers
             return View(obstacles);
         }
 
+        // Godta / approve rapport
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
+        {
+            await _repo.UpdateStatusAsync(id, "Approved");
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Slette rapport
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _repo.DeleteAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Kartoversikt over alle rapporter
         [HttpGet]
         public async Task<IActionResult> MapAll()
         {

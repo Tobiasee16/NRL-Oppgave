@@ -8,5 +8,8 @@ namespace WebApplication2.Data
         Task<int> InsertAsync(ObstacleData obstacle);
         Task<ObstacleData?> GetByIdAsync(int id);
         Task<IEnumerable<ObstacleData>> ListAsync();
+        Task UpdateStatusAsync(int id, string status);
+        Task DeleteAsync(int id);
+
     }
 }
