@@ -37,10 +37,4 @@ CREATE TABLE IF NOT EXISTS obstacles (
 );
 
 
-### Bygg og kjør i Docker
-```bash
-# Bygg image
-docker build -t mvc-app .
 
-# Start container
-docker run -p 8080:80 mvc-app
