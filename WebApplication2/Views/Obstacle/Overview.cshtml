@@ -17,10 +17,18 @@
     <!-- Header -->
     <header class="w-full border-b bg-white">
         <div class="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold tracking-tight">WebApplication2</a>
+            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold tracking-tight">NRL Application</a>
             <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
                 <a asp-controller="Home" asp-action="Index" class="hover:text-blue-600">Home</a>
-                <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Admin</a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Admin panel</a>
+                }
+                else
+                {
+                    <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Reports</a>
+                }
+                
             </nav>
         </div>
     </header>
