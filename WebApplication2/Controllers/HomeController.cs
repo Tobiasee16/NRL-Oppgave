@@ -3,6 +3,7 @@ using System.Diagnostics;
 using WebApplication2.Models;
 using MySqlConnector;
 
+// Viser status for database-tilkobling og håndterer skjema for registrering av hinder
 namespace WebApplication2.Controllers
 {
     public class HomeController : Controller
