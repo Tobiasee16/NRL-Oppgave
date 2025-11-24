@@ -15,9 +15,8 @@ namespace WebApplication2.Models
         [Display(Name = "Obstacle Height (meters)")]
         public double ObstacleHeight { get; set; }
 
-        [Required(ErrorMessage = "Description is required.")]
         [StringLength(2000, ErrorMessage = "Description cannot exceed 2000 characters.")]
-        public string ObstacleDescription { get; set; } = string.Empty;
+        public string? ObstacleDescription { get; set; } 
 
         // 📍 Enkeltpunkt (for klikk i kart)
         [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90.")]

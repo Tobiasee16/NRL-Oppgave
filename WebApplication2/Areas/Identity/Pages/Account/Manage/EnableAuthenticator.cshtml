@@ -1,0 +1,121 @@
+﻿@page
+@model EnableAuthenticatorModel
+@{
+    ViewData["Title"] = "Configure authenticator app";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<div class="max-w-xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- Tittel -->
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+            Configure authenticator app
+        </h1>
+        <p class="text-sm text-slate-400">
+            Connect an authenticator app to your account to generate verification codes for two-factor authentication.
+        </p>
+    </div>
+
+    <!-- Statusmelding -->
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <!-- Kort med innhold -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl backdrop-blur px-6 py-6 space-y-5">
+
+        <p class="text-sm text-slate-200">
+            To use an authenticator app, follow these steps:
+        </p>
+
+        <ol class="list-decimal list-inside space-y-4 text-sm text-slate-200">
+            <!-- Steg 1 -->
+            <li>
+                <p>
+                    Download a two-factor authenticator app such as Microsoft Authenticator for
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072"
+                       class="text-sky-300 hover:text-sky-200 underline underline-offset-2">Android</a> and
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073"
+                       class="text-sky-300 hover:text-sky-200 underline underline-offset-2">iOS</a>
+                    or Google Authenticator for
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en"
+                       class="text-sky-300 hover:text-sky-200 underline underline-offset-2">Android</a> and
+                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8"
+                       class="text-sky-300 hover:text-sky-200 underline underline-offset-2">iOS</a>.
+                </p>
+            </li>
+
+            <!-- Steg 2 -->
+            <li class="space-y-3">
+                <p>
+                    Scan the QR code or enter this key into your authenticator app. Spaces and casing do not matter:
+                </p>
+
+                <div class="inline-flex items-center rounded-xl bg-slate-800 px-3 py-1 text-xs font-mono text-sky-200 border border-slate-700">
+                    <span class="mr-2 text-slate-400">Key:</span>
+                    <kbd class="text-sky-100">@Model.SharedKey</kbd>
+                </div>
+
+                <div class="mt-2 rounded-xl border border-sky-700/60 bg-slate-950/80 px-3 py-2 text-xs text-slate-200">
+                    Learn how to
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=852423"
+                       class="text-sky-300 hover:text-sky-200 underline underline-offset-2">
+                        enable QR code generation
+                    </a>.
+                </div>
+
+                <div class="mt-3 flex flex-col items-start gap-3">
+                    <div id="qrCode"
+                         class="rounded-xl border border-slate-700 bg-slate-950/80 p-3">
+                        <!-- QR-code renderes her av JavaScript -->
+                    </div>
+                    <div id="qrCodeData"
+                         data-url="@Model.AuthenticatorUri"
+                         class="hidden">
+                    </div>
+                </div>
+            </li>
+
+            <!-- Steg 3 -->
+            <li class="space-y-3">
+                <p>
+                    After you have scanned the QR code or entered the key, your authenticator app will show a verification code.
+                    Enter the code below to confirm the setup.
+                </p>
+
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow px-4 py-4">
+                    <form id="send-code" method="post" class="space-y-4">
+                        <div class="space-y-1">
+                            <label asp-for="Input.Code"
+                                   class="block text-sm font-medium text-slate-200">
+                                Verification code
+                            </label>
+                            <input asp-for="Input.Code"
+                                   autocomplete="off"
+                                   placeholder="Enter the 6-digit code from your app"
+                                   class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                                          placeholder:text-slate-500 shadow-sm
+                                          focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                            <span asp-validation-for="Input.Code" class="text-sm text-rose-400"></span>
+                        </div>
+
+                        <button type="submit"
+                                class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                                       shadow-lg shadow-sky-500/30 transition
+                                       hover:bg-sky-700 active:scale-[0.98]">
+                            Verify
+                        </button>
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-sm text-rose-300 bg-rose-950/40 border border-rose-600/40 rounded-xl px-3 py-2"
+                             role="alert">
+                        </div>
+                    </form>
+                </div>
+            </li>
+        </ol>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

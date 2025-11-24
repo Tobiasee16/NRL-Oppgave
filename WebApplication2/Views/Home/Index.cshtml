@@ -3,56 +3,110 @@
     ViewData["Title"] = "Home Page";
 }
 
-@if (!string.IsNullOrEmpty(Model))
-{
-    <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
-        <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis me-1">✓</span>
-        <span>@Model</span>
-    </div>
-}
 
-<section class="hero text-center">
-    <h1 class="display-5 fw-semibold mb-2">Welcome</h1>
-   
-    <div class="d-flex flex-wrap justify-content-center gap-3">
-        @if (User.Identity?.IsAuthenticated ?? false)
-        {
-            <!-- Innlogget: rett til registreringsskjema -->
-            <a asp-action="DataForm"
-               asp-controller="Obstacle"
-               class="btn btn-primary btn-lg px-4">
-                Register obstacle
+<section class="text-center mt-10 px-4">
+    <h1 class="text-3xl font-semibold text-slate-100 tracking-tight">Welcome</h1>
+
+    @* ------------------------- ADMIN DASHBOARD ------------------------- *@
+    @if (User.IsInRole("Admin"))
+    {
+        <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Report Obstacle -->
+            <a asp-controller="Obstacle" asp-action="DataForm"
+               class="flex flex-col items-center justify-center rounded-2xl
+                          bg-sky-600 hover:bg-sky-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Report Obstacle</span>
+                <span class="text-sm opacity-80 mt-2">Register new aviation obstacle</span>
             </a>
-        }
-        else
-        {
-            <!-- Ikke innlogget: send til Identity Login med retur til DataForm -->
+
+            <!-- Obstacles Overview -->
+            <a asp-controller="Admin" asp-action="MapAll"
+               class="flex flex-col items-center justify-center rounded-2xl
+                          bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Map</span>
+                <span class="text-sm opacity-80 mt-2">View all obstacle submissions in map</span>
+            </a>
+
+            <!-- Admin Panel -->
+            <a asp-controller="Admin" asp-action="Index"
+               class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
+                          bg-rose-600 hover:bg-rose-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Admin Panel</span>
+                <span class="text-sm opacity-80 mt-2">Approve or reject reports</span>
+            </a>
+
+        </div>
+    }
+
+    @* --------------------- VANLIG BRUKER DASHBOARD --------------------- *@
+    else if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Report Obstacle (vanlig bruker) -->
+            <a asp-controller="Obstacle" asp-action="DataForm"
+               class="flex flex-col items-center justify-center rounded-2xl
+                          bg-sky-600 hover:bg-sky-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Report Obstacle</span>
+                <span class="text-sm opacity-80 mt-2">Submit a new report</span>
+            </a>
+
+            <!-- Reports (vanlig bruker) -->
+           <a asp-controller="Admin" asp-action="MapAll"
+               class="flex flex-col items-center justify-center rounded-2xl
+                          bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Map</span>
+                <span class="text-sm opacity-80 mt-2">View all obstacle submissions in map</span>
+            </a>
+
+
+        </div>
+    }
+
+    @* --------------------- IKKE INNLOGGET --------------------- *@
+    else
+    {
+        <div class="max-w-md mx-auto mt-10">
             <a asp-area="Identity"
                asp-page="/Account/Login"
                asp-route-returnUrl="@Url.Action("DataForm", "Obstacle")"
-               class="btn btn-primary btn-lg px-4">
-                Log in to register obstacle
+               class="block w-full rounded-2xl bg-sky-600 hover:bg-sky-700 text-white
+                          text-center text-xl font-semibold p-8 shadow-xl transition active:scale-[0.98]">
+                Log in to report obstacle
             </a>
-        }
+        </div>
+    }
 
-        @* Vis Admin-knapp bare når bruker er Admin *@
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-action="Index" asp-controller="Admin" class="btn btn-outline-secondary px-4">
-                Admin Panel
-            </a>
-        }
-    </div>
-
-    @* Liten status for innlogging under CTA *@
-    <div class="mt-4 small text-muted">
+    @* Status-linje under *@
+    <div class="mt-8 text-sm text-slate-400">
         @if (User.Identity?.IsAuthenticated ?? false)
         {
-            <span>Du er innlogget som <strong>@User.Identity!.Name</strong>.</span>
+            <span>You are logged in as <strong class="text-slate-200">@User.Identity.Name</strong>.</span>
         }
         else
         {
-            <span>Har du konto? Bruk lenkene oppe til høyre for å logge inn eller registrere deg.</span>
+            <span>Please log in using the links in the top right corner.</span>
         }
     </div>
+
+    <!-- SUCCESS ALERT -->
+    @if (!string.IsNullOrEmpty(Model))
+    {
+        <div class="max-w-md mx-auto mt-6 mb-4 text-center
+                    rounded-lg border border-emerald-300
+                    bg-emerald-50 text-emerald-700
+                    px-3 py-2 flex items-center justify-center gap-2
+                    text-sm shadow-sm">
+            <span class="font-semibold">✓</span>
+            <span>@Model</span>
+        </div>
+    }
+
+
 </section>

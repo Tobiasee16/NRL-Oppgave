@@ -1,0 +1,77 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+
+    string ActiveClasses =
+        "block w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold " +
+        "bg-sky-600 text-white shadow shadow-sky-500/40";
+
+    string InactiveClasses =
+        "block w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium " +
+        "bg-slate-900/70 text-slate-200 border border-slate-800 " +
+        "hover:bg-slate-800 hover:text-sky-300 transition";
+}
+
+<ul class="flex flex-col gap-3">
+
+    <!-- Profile -->
+    <li>
+        <a id="profile"
+           asp-page="./Index"
+           class="@(ManageNavPages.IndexNavClass(ViewContext) == "active"
+                               ? ActiveClasses
+                               : InactiveClasses)">
+            Profile
+        </a>
+    </li>
+
+    <!-- Email -->
+    <li>
+        <a id="email"
+           asp-page="./Email"
+           class="@(ManageNavPages.EmailNavClass(ViewContext) == "active"
+                               ? ActiveClasses
+                               : InactiveClasses)">
+            Email
+        </a>
+    </li>
+
+    <!-- Password -->
+    <li>
+        <a id="change-password"
+           asp-page="./ChangePassword"
+           class="@(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active"
+                               ? ActiveClasses
+                               : InactiveClasses)">
+            Password
+        </a>
+    </li>
+
+    <!-- External Logins -->
+    @if (hasExternalLogins)
+    {
+        <li>
+            <a id="external-login"
+               asp-page="./ExternalLogins"
+               class="@(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active"
+                                       ? ActiveClasses
+                                       : InactiveClasses)">
+                External logins
+            </a>
+        </li>
+    }
+
+
+    <!-- Personal data -->
+    <li>
+        <a id="personal-data"
+           asp-page="./PersonalData"
+           class="@(ManageNavPages.PersonalDataNavClass(ViewContext) == "active"
+                               ? ActiveClasses
+                               : InactiveClasses)">
+            Personal data
+        </a>
+    </li>
+</ul>

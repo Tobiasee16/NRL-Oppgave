@@ -1,132 +1,187 @@
 ﻿@model WebApplication2.Models.ObstacleData
 @{
-    Layout = null;
     ViewData["Title"] = "Obstacle Registration";
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Leaflet & Leaflet Draw -->
+@section Head {
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
-    <title>@ViewData["Title"]</title>
     <style>
         #map {
             height: 420px;
-        }</style>
-</head>
+        }
+    </style>
+}
 
-<body class="min-h-screen bg-gray-50 text-gray-900">
-    <main class="mx-auto max-w-3xl px-4 py-10">
-        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div class="px-6 py-5 border-b border-gray-100">
-                <h1 class="text-2xl font-semibold tracking-tight">Obstacle Registration</h1>
-                <p class="mt-1 text-sm text-gray-600">Click or draw on the map to set location.</p>
+<div class="max-w-3xl mx-auto px-4 py-6 lg:py-8">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-2xl backdrop-blur">
+
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-slate-800">
+            <p class="text-xs uppercase tracking-[0.18em] text-sky-300/80 mb-1">
+                Obstacle registration
+            </p>
+            <h1 class="text-2xl md:text-3xl font-semibold tracking-tight text-slate-50">
+                Report aviation obstacle
+            </h1>
+            <p class="mt-2 text-sm text-slate-400">
+                Select the obstacle on the map and fill out the details below. Location is required.
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form asp-action="DataForm" method="post" class="px-6 py-6 space-y-6">
+            @Html.AntiForgeryToken()
+
+            <!-- Validation summary -->
+            <div asp-validation-summary="ModelOnly"
+                 class="text-sm text-rose-200 bg-rose-950/40 border border-rose-500/40 rounded-xl px-3 py-2"
+                 role="alert"
+                 data-valmsg-summary="true"></div>
+
+            <!-- Obstacle name -->
+            <div class="space-y-1">
+                <label asp-for="ObstacleName"
+                       class="block text-sm font-medium text-slate-200">
+                    Obstacle name
+                </label>
+                <input asp-for="ObstacleName"
+                       placeholder="e.g., Antenna mast, crane, tower..."
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 shadow-sm
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                <span asp-validation-for="ObstacleName" class="text-sm text-rose-400"></span>
             </div>
 
-            <form asp-action="DataForm" method="post" class="px-6 py-6 space-y-6">
-                @Html.AntiForgeryToken()
-
-                <!-- Validation summary -->
-                <div asp-validation-summary="ModelOnly"
-                     class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"
-                     data-valmsg-summary="true"></div>
-
-                <!-- Name -->
-                <div class="space-y-1">
-                    <label asp-for="ObstacleName" class="block text-sm font-medium text-gray-800">Obstacle name</label>
-                    <input asp-for="ObstacleName"
-                           placeholder="e.g., Fallen tree"
-                           class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
-                                  placeholder:text-gray-400 shadow-sm
-                                  focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
-                    <span asp-validation-for="ObstacleName" class="text-sm text-red-600"></span>
+            <!-- Height -->
+            <div class="space-y-1">
+                <label asp-for="ObstacleHeight"
+                       class="block text-sm font-medium text-slate-200">
+                    Obstacle height
+                </label>
+                <div class="flex">
+                    <input asp-for="ObstacleHeight"
+                           type="number" min="0" step="1"
+                           placeholder="e.g., 45.5"
+                           class="w-full rounded-l-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                                  placeholder:text-slate-500 shadow-sm
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span class="inline-flex items-center rounded-r-xl border border-l-0 border-slate-700 bg-slate-900 px-3 text-xs text-slate-300">
+                        meters
+                    </span>
                 </div>
+                <p class="text-xs text-slate-500">
+                    Enter height in meters. Minimum 0, decimals allowed.
+                </p>
+                <span asp-validation-for="ObstacleHeight" class="text-sm text-rose-400"></span>
+            </div>
 
-                <!-- Height -->
-                <div class="space-y-1">
-                    <label asp-for="ObstacleHeight" class="block text-sm font-medium text-gray-800">Obstacle height</label>
-                    <div class="flex">
-                        <input asp-for="ObstacleHeight"
-                               type="number" min="0" step="0.01"
-                               placeholder="e.g., 1.75"
-                               class="w-full rounded-l-lg border border-gray-300 bg-white px-3 py-2
-                                      placeholder:text-gray-400 shadow-sm
-                                      focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" />
-                        <span class="inline-flex items-center rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 text-gray-600">m</span>
-                    </div>
-                    <p class="text-xs text-gray-500">Enter height in meters. Min 0, decimals allowed.</p>
-                    <span asp-validation-for="ObstacleHeight" class="text-sm text-red-600"></span>
+            <!-- Description -->
+            <div class="space-y-1">
+                <label asp-for="ObstacleDescription"
+                       class="block text-sm font-medium text-slate-200">
+                    Description (Optional)
+                </label>
+                <textarea asp-for="ObstacleDescription"
+                          id="obstacleDesc"
+                          rows="4"
+                          maxlength="2000"
+                          placeholder="Short description of the obstacle, location context, nearby structures, etc."
+                          class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                                 placeholder:text-slate-500 shadow-sm
+                                 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"></textarea>
+                <div class="flex justify-between text-[11px] text-slate-500">
+                    <span>Max 2000 characters.</span>
+                    <span id="descCounter">2000 characters remaining</span>
                 </div>
+                <span asp-validation-for="ObstacleDescription" class="text-sm text-rose-400"></span>
+            </div>
 
-                <!-- Description -->
-                <div class="space-y-1">
-                    <label asp-for="ObstacleDescription" class="block text-sm font-medium text-gray-800">Description</label>
-                    <textarea asp-for="ObstacleDescription" id="obstacleDesc" rows="4" maxlength="2000"
-                              placeholder="Short description..."
-                              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2
-                                     placeholder:text-gray-400 shadow-sm
-                                     focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"></textarea>
-                    <div class="flex justify-between text-xs text-gray-500">
-                        <span>Max 2000 characters.</span>
-                        <span id="descCounter">2000 characters remaining</span>
-                    </div>
-                    <span asp-validation-for="ObstacleDescription" class="text-sm text-red-600"></span>
-                </div>
-
-                <!-- Map -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-800">Select location/area on map</label>
-                    <div id="map" class="rounded-xl shadow border"></div>
-                    <input type="hidden" asp-for="GeometryGeoJson" id="geojson" />
-                    <span asp-validation-for="GeometryGeoJson" class="text-sm text-red-600"></span>
-                </div>
-
-                <!-- Coordinates (auto-filled) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Map + GPS button -->
+            <div class="space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                        <label asp-for="Latitude" class="block text-sm font-medium text-gray-800">Latitude</label>
-                        <input asp-for="Latitude" id="lat"
-                               class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm"
-                               readonly />
+                        <label class="block text-sm font-medium text-slate-200">
+                            Select location / area on map
+                        </label>
+                        <p class="text-xs text-slate-500">
+                            Draw a point, line, or area representing the obstacle, or use GPS to place a point and adjust by dragging.
+                        </p>
                     </div>
-                    <div>
-                        <label asp-for="Longitude" class="block text-sm font-medium text-gray-800">Longitude</label>
-                        <input asp-for="Longitude" id="lng"
-                               class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-gray-700 shadow-sm"
-                               readonly />
-                    </div>
-                </div>
 
-                <!-- Buttons -->
-                <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button type="submit"
-                            class="inline-flex justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-white font-medium
-                                   shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-                        Submit data
+                    <button type="button"
+                            id="btnUseGps"
+                            class="w-full sm:w-auto inline-flex items-center gap-2 justify-center
+               rounded-2xl bg-sky-600 px-6 py-3 text-sm font-semibold text-white
+               shadow-lg shadow-sky-500/30 hover:bg-sky-700 active:scale-[0.97]
+               focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0 transition">
+                        <span class="gps-icon">📡</span>
+                        <span class="gps-text">Use my location (GPS)</span>
+                        <span class="gps-spinner hidden animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
                     </button>
-                    <a asp-action="Index" asp-controller="Home"
-                       class="inline-flex justify-center rounded-lg border border-gray-300 px-5 py-2.5 text-gray-800
-                              hover:bg-gray-50">
-                        Cancel
-                    </a>
-                </div>
-            </form>
-        </div>
-    </main>
 
-    <!-- Validation -->
-    <partial name="_ValidationScriptsPartial" />
+
+                </div>
+
+                <div id="map"
+                     class="rounded-2xl border border-slate-700 bg-slate-950 shadow-inner"></div>
+                <input type="hidden" asp-for="GeometryGeoJson" id="geojson" />
+                <span asp-validation-for="GeometryGeoJson" class="text-sm text-rose-400"></span>
+            </div>
+
+            <!-- Coordinates -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label asp-for="Latitude"
+                           class="block text-sm font-medium text-slate-200">
+                        Latitude
+                    </label>
+                    <input asp-for="Latitude"
+                           id="lat"
+                           class="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-200
+                                  shadow-sm"
+                           readonly />
+                </div>
+                <div class="space-y-1">
+                    <label asp-for="Longitude"
+                           class="block text-sm font-medium text-slate-200">
+                        Longitude
+                    </label>
+                    <input asp-for="Longitude"
+                           id="lng"
+                           class="w-full rounded-xl border border-slate-700 bg-slate-950/60 px-3 py-2 text-sm text-slate-200
+                                  shadow-sm"
+                           readonly />
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit"
+                        class="inline-flex justify-center items-center rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white
+                               shadow-lg shadow-sky-500/30 hover:bg-sky-700
+                               focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0
+                               active:scale-[0.98]">
+                    Submit obstacle
+                </button>
+
+                <a asp-action="Index"
+                   asp-controller="Home"
+                   class="inline-flex justify-center items-center rounded-xl border border-slate-700 px-5 py-2.5 text-sm font-medium text-slate-100
+                          hover:bg-slate-900/70">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
     <script>
         // Description counter
@@ -151,6 +206,7 @@
         }).addTo(map);
 
         const drawnItems = new L.FeatureGroup().addTo(map);
+        let gpsMarker = null;
 
         const drawControl = new L.Control.Draw({
             position: 'topleft',
@@ -162,7 +218,10 @@
                 circle: false,
                 circlemarker: false
             },
-            edit: { featureGroup: drawnItems, remove: true }
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            }
         });
         map.addControl(drawControl);
 
@@ -170,10 +229,12 @@
             let lat = null, lng = null;
             if (typeof layer.getLatLng === 'function') {
                 const ll = layer.getLatLng();
-                lat = ll.lat; lng = ll.lng;
+                lat = ll.lat;
+                lng = ll.lng;
             } else if (typeof layer.getBounds === 'function') {
                 const center = layer.getBounds().getCenter();
-                lat = center.lat; lng = center.lng;
+                lat = center.lat;
+                lng = center.lng;
             }
             if (lat !== null && lng !== null) {
                 document.getElementById('lat').value = lat.toFixed(6);
@@ -184,36 +245,125 @@
         function syncGeoJsonInput() {
             const fc = { type: "FeatureCollection", features: [] };
             let lastLayer = null;
+
             drawnItems.eachLayer(layer => {
                 try {
                     fc.features.push(layer.toGeoJSON());
                     lastLayer = layer;
                 } catch { }
             });
+
             document.getElementById('geojson').value = JSON.stringify(fc);
             if (lastLayer) setLatLngFromLayer(lastLayer);
         }
 
-        map.on(L.Draw.Event.CREATED, e => { drawnItems.addLayer(e.layer); syncGeoJsonInput(); });
-        map.on(L.Draw.Event.EDITED, () => { syncGeoJsonInput(); });
-        map.on(L.Draw.Event.DELETED, () => { syncGeoJsonInput(); });
+        map.on(L.Draw.Event.CREATED, e => {
+            drawnItems.addLayer(e.layer);
+            syncGeoJsonInput();
+        });
 
+        map.on(L.Draw.Event.EDITED, () => {
+            syncGeoJsonInput();
+        });
+
+        map.on(L.Draw.Event.DELETED, () => {
+            syncGeoJsonInput();
+        });
+
+        // Restore geometry if already present (e.g. on validation error)
         (function restoreIfAny() {
             const raw = document.getElementById('geojson').value;
             if (!raw) return;
+
             try {
                 const gj = JSON.parse(raw);
                 const group = L.geoJSON(gj);
                 group.eachLayer(l => drawnItems.addLayer(l));
+
                 try {
                     const bounds = group.getBounds();
-                    if (bounds && bounds.isValid()) map.fitBounds(bounds, { padding: [20, 20] });
+                    if (bounds && bounds.isValid()) {
+                        map.fitBounds(bounds, { padding: [20, 20] });
+                    }
                 } catch { }
+
                 let last = null;
                 group.eachLayer(l => last = l);
                 if (last) setLatLngFromLayer(last);
             } catch { }
         })();
+
+        // --- GPS / "Use my location" med spinner + draggable marker ---
+        const gpsBtn = document.getElementById('btnUseGps');
+        const gpsIcon = gpsBtn ? gpsBtn.querySelector('.gps-icon') : null;
+        const gpsText = gpsBtn ? gpsBtn.querySelector('.gps-text') : null;
+        const gpsSpinner = gpsBtn ? gpsBtn.querySelector('.gps-spinner') : null;
+
+        function setGpsStateIdle() {
+            if (!gpsBtn) return;
+            gpsBtn.disabled = false;
+            gpsBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+            if (gpsSpinner) gpsSpinner.classList.add('hidden');
+            if (gpsText) gpsText.textContent = 'Use my location (GPS)';
+        }
+
+        function setGpsStateLoading() {
+            if (!gpsBtn) return;
+            gpsBtn.disabled = true;
+            gpsBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            if (gpsSpinner) gpsSpinner.classList.remove('hidden');
+            if (gpsText) gpsText.textContent = 'Locating…';
+        }
+
+        function createOrMoveGpsMarker(lat, lng) {
+            // Bruk GPS-markøren som gjeldende geometri
+            drawnItems.clearLayers();
+
+            gpsMarker = L.marker([lat, lng], { draggable: true });
+
+            gpsMarker.on('moveend', () => {
+                setLatLngFromLayer(gpsMarker);
+                syncGeoJsonInput();
+            });
+
+            drawnItems.addLayer(gpsMarker);
+
+            setLatLngFromLayer(gpsMarker);
+            syncGeoJsonInput();
+
+            map.setView([lat, lng], 14);
+        }
+
+        if (gpsBtn) {
+            if (!("geolocation" in navigator)) {
+                gpsBtn.disabled = true;
+                if (gpsText) gpsText.textContent = "GPS not available";
+                gpsBtn.classList.add("opacity-60", "cursor-not-allowed");
+            } else {
+                gpsBtn.addEventListener('click', () => {
+                    setGpsStateLoading();
+
+                    navigator.geolocation.getCurrentPosition(
+                        pos => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+
+                            createOrMoveGpsMarker(lat, lng);
+                            setGpsStateIdle();
+                        },
+                        err => {
+                            console.error("GPS error", err);
+                            alert("Could not get your position. Check GPS and permissions.");
+                            setGpsStateIdle();
+                        },
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 10000
+                        }
+                    );
+                });
+            }
+        }
     </script>
-</body>
-</html>
+}
+

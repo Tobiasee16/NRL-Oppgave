@@ -1,0 +1,146 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md space-y-6">
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+                Log in
+            </h1>
+            <p class="text-sm text-slate-400">
+                Sign in to report and view aviation obstacles.
+            </p>
+        </div>
+
+        <section class="rounded-2xl border border-slate-800 bg-slate-900/80 px-6 py-6 shadow-xl">
+            <form id="account" method="post" class="space-y-4">
+                <!-- Valideringsoppsummering -->
+                <div asp-validation-summary="ModelOnly"
+                     class="text-sm mb-2 text-rose-300"
+                     role="alert">
+                </div>
+
+                <!-- E-post -->
+                <div class="space-y-1">
+                    <label asp-for="Input.Email"
+                           class="block text-sm font-medium text-slate-200">
+                        Email
+                    </label>
+                    <input asp-for="Input.Email"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="name@example.com"
+                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Input.Email"
+                          class="text-sm text-rose-400"></span>
+                </div>
+
+                <!-- Passord -->
+                <div class="space-y-1">
+                    <label asp-for="Input.Password"
+                           class="block text-sm font-medium text-slate-200">
+                        Password
+                    </label>
+                    <input asp-for="Input.Password"
+                           autocomplete="current-password"
+                           aria-required="true"
+                           placeholder="••••••••"
+                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Input.Password"
+                          class="text-sm text-rose-400"></span>
+                </div>
+
+                <!-- Remember me -->
+                <div class="flex items-center justify-between text-sm">
+                    <label asp-for="Input.RememberMe"
+                           class="inline-flex items-center gap-2 text-slate-300">
+                        <input asp-for="Input.RememberMe"
+                               class="h-4 w-4 rounded border-slate-600 bg-slate-950 text-sky-500
+                                      focus:ring-sky-500 focus:ring-offset-0" />
+                        <span>@Html.DisplayNameFor(m => m.Input.RememberMe)</span>
+                    </label>
+
+                    <a id="forgot-password"
+                       asp-page="./ForgotPassword"
+                       class="text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">
+                        Forgot your password?
+                    </a>
+                </div>
+
+                <!-- Logg-inn knapp -->
+                <div>
+                    <button id="login-submit" type="submit"
+                            class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                                   shadow-lg shadow-sky-500/30 transition
+                                   hover:bg-sky-700 active:scale-[0.98]">
+                        Log in
+                    </button>
+                </div>
+
+                <!-- Lenker under -->
+                <div class="pt-2 space-y-1 text-sm">
+                    <p>
+                        <a asp-page="./Register"
+                           asp-route-returnUrl="@Model.ReturnUrl"
+                           class="text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">
+                            Register as a new user
+                        </a>
+                    </p>
+                    <p>
+                        <a id="resend-confirmation"
+                           asp-page="./ResendEmailConfirmation"
+                           class="text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">
+                            Resend email confirmation
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </section>
+
+        <!-- Eksterne login-tjenester (valgfritt) -->
+        <section class="text-sm text-slate-300">
+            @if ((Model.ExternalLogins?.Count ?? 0) == 0)
+            {
+                <p class="text-xs text-slate-500 text-center">
+                    No external authentication providers are configured.
+                </p>
+            }
+            else
+            {
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4">
+                    <h3 class="text-sm font-medium text-slate-100 mb-3 text-center">
+                        Or continue with
+                    </h3>
+                    <form id="external-account"
+                          asp-page="./ExternalLogin"
+                          asp-route-returnUrl="@Model.ReturnUrl"
+                          method="post"
+                          class="flex flex-wrap justify-center gap-2">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit"
+                                    class="inline-flex items-center justify-center rounded-full border border-slate-700
+                                           bg-slate-900 px-4 py-1.5 text-xs font-medium text-slate-100
+                                           hover:bg-slate-800 hover:border-sky-500 transition"
+                                    name="provider"
+                                    value="@provider.Name"
+                                    title="Log in using your @provider.DisplayName account">
+                                @provider.DisplayName
+                            </button>
+                        }
+                    </form>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

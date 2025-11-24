@@ -1,0 +1,36 @@
+﻿@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+<div class="max-w-6xl mx-auto px-4 py-8 lg:py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)] gap-8">
+
+        <!-- VENSTRE SIDE: Tittel + meny -->
+        <aside class="space-y-4">
+            <div>
+                <h1 class="text-lg font-semibold text-slate-50">
+                    Manage your account
+                </h1>
+                <p class="text-sm text-slate-400">
+                    Change your account settings.
+                </p>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800"></div>
+
+            <!-- Navigasjonen vi allerede har stylet i _ManageNav.cshtml -->
+            <nav class="mt-2">
+                <partial name="_ManageNav" />
+            </nav>
+        </aside>
+
+        <!-- HØYRE SIDE: Innhold fra de ulike Manage-sidene -->
+        <section class="min-h-[320px]">
+            @RenderBody()
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

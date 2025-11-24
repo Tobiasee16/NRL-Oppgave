@@ -17,7 +17,12 @@ namespace WebApplication2.Controllers
 
         // GET: /Obstacle/DataForm
         [HttpGet]
-        public IActionResult DataForm() => View();
+        public IActionResult DataForm()
+        {
+            ModelState.Clear(); // fjerner automatisk validering i GET
+            return View(new ObstacleData());
+        }
+
 
         // POST: /Obstacle/DataForm
         [HttpPost]

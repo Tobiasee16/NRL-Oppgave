@@ -1,0 +1,59 @@
+﻿@page
+@model PersonalDataModel
+@{
+    ViewData["Title"] = "Personal Data";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="max-w-xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- Title -->
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+            Personal data
+        </h1>
+        <p class="text-sm text-slate-400">
+            View, download, or delete the personal data associated with your account.
+        </p>
+    </div>
+
+    <!-- Info card -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl backdrop-blur px-6 py-6 space-y-4">
+        <p class="text-sm text-slate-200">
+            Your account contains personal data that you have provided. This page allows you to download a copy of that
+            data, or delete it permanently.
+        </p>
+        <p class="text-sm text-rose-200">
+            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+        </p>
+
+        <!-- Actions -->
+        <div class="mt-4 space-y-3">
+            <!-- Download data -->
+            <form id="download-data"
+                  asp-page="DownloadPersonalData"
+                  method="post"
+                  class="inline">
+                <button type="submit"
+                        class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                               shadow-lg shadow-sky-500/30 transition
+                               hover:bg-sky-700 active:scale-[0.98]">
+                    Download my data
+                </button>
+            </form>
+
+            <!-- Delete account -->
+            <a id="delete"
+               asp-page="DeletePersonalData"
+               class="block w-full text-center rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white
+                      shadow-lg shadow-rose-500/30 transition
+                      hover:bg-rose-800 active:scale-[0.98]">
+                Delete data and close my account
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

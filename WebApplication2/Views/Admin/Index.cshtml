@@ -1,29 +1,24 @@
 ﻿@model IEnumerable<WebApplication2.Models.ObstacleData>
 @using System.Text.Json
 @{
-    Layout = null;
     ViewData["Title"] = "Admin – Obstacles";
     var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://cdn.tailwindcss.com"></script>
+@section Head {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <title>@ViewData["Title"]</title>
+
     <style>
         .mini-map {
             width: 180px;
             height: 120px;
-            border-radius: .75rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
         }
 
         .map-skel {
-            background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 37%,#f3f4f6 63%);
+            background: linear-gradient(90deg, #0f172a 25%, #1e293b 37%, #0f172a 63%);
             background-size: 400% 100%;
             animation: sh 1.4s ease infinite;
         }
@@ -32,207 +27,434 @@
             0% {
                 background-position: 100% 50%;
             }
-
             100% {
                 background-position: 0 50%;
             }
         }
     </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-    <header class="w-full border-b bg-white">
-        <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-            <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold">NRL Application</a>
-            <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
-                <a asp-controller="Home" asp-action="Index" class="hover:text-blue-600">Home</a>
-                <a asp-controller="Obstacle" asp-action="DataForm" class="hover:text-blue-600">Register</a>
-            </nav>
-        </div>
-    </header>
+}
 
-    <main class="mx-auto max-w-6xl px-4 py-8">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-semibold">All Obstacles</h1>
-            <a asp-action="MapAll"
-               class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 font-medium
-                      shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
-                View All on Map
-            </a>
+<div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
+
+    <!-- Header / topp -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+                All obstacles
+            </h1>
+            <p class="text-sm text-slate-400">
+                Review, approve or delete reported obstacles.
+            </p>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-2xl border border-gray-200 shadow-sm">
-            <table class="min-w-full">
-                <thead class="bg-gray-100 text-gray-700">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">ID</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Name</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Height</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Created</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Map</th>
-                        <th class="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @{
-                        var idx = 0;
-                    }
-                    @foreach (var o in Model)
-                    {
-                        var mapId = $"map_{idx++}";
-                        var gj = string.IsNullOrWhiteSpace(o.GeometryGeoJson) ? null : o.GeometryGeoJson;
-                        var lat = o.Latitude;
-                        var lng = o.Longitude;
+        <a asp-action="MapAll"
+           class="inline-flex items-center rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                  shadow-lg shadow-sky-500/30 hover:bg-sky-700 active:scale-[0.98]
+                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0">
+            View all on map
+        </a>
+    </div>
 
-                        <tr class="hover:bg-gray-50 align-top">
-                            <td class="px-4 py-3">@o.Id</td>
-                            <td class="px-4 py-3">
-                                <div class="font-medium">@o.ObstacleName</div>
-                                <div class="text-xs text-gray-500 line-clamp-2">@o.ObstacleDescription</div>
-                            </td>
-                            <td class="px-4 py-3">@o.ObstacleHeight</td>
-                            <td class="px-4 py-3">
-                                @if (string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                        Approved
-                                    </span>
-                                }
-                                else if (string.Equals(o.Status, "Pending", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span class="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                                        Pending
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800">
-                                        @o.Status
-                                    </span>
-                                }
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-600">
-                                @o.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                            </td>
-                            <td class="px-4 py-3">
-                                <div id="@mapId"
-                                     class="mini-map map-skel"
-                                     data-geo='@Html.Raw(JsonSerializer.Serialize(gj ?? "", jsonOpts))'
-                                     data-lat='@Html.Raw(JsonSerializer.Serialize(lat))'
-                                     data-lng='@Html.Raw(JsonSerializer.Serialize(lng))'>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex flex-col gap-2 sm:flex-row">
-                                    <a asp-controller="Obstacle"
-                                       asp-action="Overview"
-                                       asp-route-id="@o.Id"
-                                       class="text-blue-600 text-sm hover:underline">
-                                        Details
-                                    </a>
+    <!-- Filterpanel -->
+    <section class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4 space-y-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Filters
+                </p>
+                <p class="text-xs text-slate-500">
+                    Filter by text, height, status and created date.
+                </p>
+            </div>
 
-                                    @* Disse to kun for Admin *@
-                                    @if (User.IsInRole("Admin"))
-                                    {
-                                        <form asp-action="Approve"
-                                              asp-controller="Admin"
-                                              method="post"
-                                              class="inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@o.Id" />
-                                            <button type="submit"
-                                                    class="inline-flex items-center rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white
-                                       hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                    @(string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase) ? "disabled" : null)>
-                                                Approve
-                                            </button>
-                                        </form>
-
-                                        <form asp-action="Delete"
-                                              asp-controller="Admin"
-                                              method="post"
-                                              class="inline"
-                                              onsubmit="return confirm('Are you sure you want to delete this report?');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@o.Id" />
-                                            <button type="submit"
-                                                    class="inline-flex items-center rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white
-                                       hover:bg-red-700">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            <p id="obstacle-count" class="text-xs text-slate-400">
+                <!-- fylles av JS -->
+            </p>
         </div>
 
-        <div class="mt-6">
-            <a asp-controller="Home" asp-action="Index"
-               class="text-sm text-blue-600 hover:underline">
-                ← Back to Home
-            </a>
+        <div class="grid gap-3 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+            <!-- Tekst (name/description) -->
+            <div>
+                <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
+                    Search (name / description)
+                </label>
+                <input id="filter-text"
+                       type="text"
+                       placeholder="Search obstacles..."
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Min height -->
+            <div>
+                <label for="filter-min-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Min height (m)
+                </label>
+                <input id="filter-min-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="0"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Max height -->
+            <div>
+                <label for="filter-max-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Max height (m)
+                </label>
+                <input id="filter-max-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="e.g. 50"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label for="filter-status" class="block text-xs font-medium text-slate-300 mb-1">
+                    Status
+                </label>
+                <select id="filter-status"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                               focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                    <option value="all">All</option>
+                    <option value="pending">Pending only</option>
+                    <option value="approved">Approved only</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
         </div>
-    </main>
 
-    <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500">
-        © @DateTime.Now.Year — WebApplication2
-    </footer>
+        <!-- Dato-filter -->
+        <div class="grid gap-3 md:grid-cols-2">
+            <div>
+                <label for="filter-from-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    From date
+                </label>
+                <input id="filter-from-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+            <div>
+                <label for="filter-to-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    To date
+                </label>
+                <input id="filter-to-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+        </div>
+    </section>
 
+    <!-- Tabell -->
+    <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur">
+        <table class="min-w-full text-sm text-slate-100">
+            <thead class="bg-slate-900/90 border-b border-slate-800">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Height</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Created</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Map</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+            @{
+                var idx = 0;
+            }
+            @foreach (var o in Model)
+            {
+                var mapId = $"map_{idx++}";
+                var gj = string.IsNullOrWhiteSpace(o.GeometryGeoJson) ? null : o.GeometryGeoJson;
+                var lat = o.Latitude;
+                var lng = o.Longitude;
+
+                <tr class="align-top hover:bg-slate-800/70 transition"
+                    data-id="@o.Id">
+                    <td class="px-4 py-3 align-top text-xs text-slate-400">
+                        @o.Id
+                    </td>
+
+                    <td class="px-4 py-3 align-top">
+                        <div class="font-medium text-slate-50">@o.ObstacleName</div>
+                        <div class="mt-1 text-xs text-slate-400 line-clamp-2">
+                            @o.ObstacleDescription
+                        </div>
+                    </td>
+
+                    <td class="px-4 py-3 align-top text-sm text-slate-100">
+                        @o.ObstacleHeight
+                    </td>
+
+                    <td class="px-4 py-3 align-top">
+                        @if (string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="inline-flex items-center rounded-full bg-emerald-900/60 px-3 py-1 text-[11px] font-medium text-emerald-300 border border-emerald-500/40">
+                                Approved
+                            </span>
+                        }
+                        else if (string.Equals(o.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <span class="inline-flex items-center rounded-full bg-amber-900/60 px-3 py-1 text-[11px] font-medium text-amber-200 border border-amber-400/40">
+                                Pending
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-200 border border-slate-600/60">
+                                @o.Status
+                            </span>
+                        }
+                    </td>
+
+                    <td class="px-4 py-3 align-top text-xs text-slate-400 whitespace-nowrap">
+                        @o.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                    </td>
+
+                    <td class="px-4 py-3 align-top">
+                        <div id="@mapId"
+                             class="mini-map map-skel"
+                             data-geo='@Html.Raw(JsonSerializer.Serialize(gj ?? "", jsonOpts))'
+                             data-lat='@Html.Raw(JsonSerializer.Serialize(lat))'
+                             data-lng='@Html.Raw(JsonSerializer.Serialize(lng))'>
+                        </div>
+                    </td>
+
+                    <td class="px-4 py-3 align-top">
+                        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                            <a asp-controller="Obstacle"
+                               asp-action="Overview"
+                               asp-route-id="@o.Id"
+                               class="text-xs font-medium text-sky-300 hover:text-sky-200 underline underline-offset-2">
+                                Details
+                            </a>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <form asp-action="Approve"
+                                      asp-controller="Admin"
+                                      method="post"
+                                      class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@o.Id" />
+                                    <button type="submit"
+                                            class="inline-flex items-center rounded-xl bg-emerald-600 px-3 py-1.5 text-[11px] font-semibold text-white
+                                                   shadow-sm hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                            @(string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase) ? "disabled" : null)>
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form asp-action="Delete"
+                                      asp-controller="Admin"
+                                      method="post"
+                                      class="inline"
+                                      onsubmit="return confirm('Are you sure you want to delete this report?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@o.Id" />
+                                    <button type="submit"
+                                            class="inline-flex items-center rounded-xl bg-rose-700 px-3 py-1.5 text-[11px] font-semibold text-white
+                                                   shadow-sm hover:bg-rose-800">
+                                        Delete
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <a asp-controller="Home" asp-action="Index"
+           class="text-sm text-sky-300 hover:text-sky-200 underline underline-offset-2">
+            ← Back to home
+        </a>
+    </div>
+</div>
+
+@section Scripts {
     <script>
-        // Lazy-initialiser mini-kart kun når de er i viewport
+        // --- Data for filtrering (fra server) ---
+        const allItems = @Html.Raw(JsonSerializer.Serialize(
+            Model.Select(o => new {
+                id = o.Id,
+                name = o.ObstacleName,
+                desc = o.ObstacleDescription,
+                height = o.ObstacleHeight,
+                status = o.Status,
+                createdAt = o.CreatedAt
+            }),
+            jsonOpts
+        ));
+
+        const rows = Array.from(document.querySelectorAll('tbody tr[data-id]'));
+
+        function applyAdminFilters() {
+            const textInput = document.getElementById('filter-text');
+            const minInput = document.getElementById('filter-min-height');
+            const maxInput = document.getElementById('filter-max-height');
+            const statusSelect = document.getElementById('filter-status');
+            const fromInput = document.getElementById('filter-from-date');
+            const toInput = document.getElementById('filter-to-date');
+            const countEl = document.getElementById('obstacle-count');
+
+            const q = (textInput?.value || '').toLowerCase().trim();
+            const minH = parseFloat(minInput?.value || '');
+            const maxH = parseFloat(maxInput?.value || '');
+            const statusFilter = (statusSelect?.value || 'all').toLowerCase();
+
+            const fromVal = fromInput?.value || '';
+            const toVal = toInput?.value || '';
+            const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+            const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+            let visible = 0;
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const item = allItems.find(x => String(x.id) === String(id));
+                if (!item) {
+                    row.classList.remove('hidden');
+                    return;
+                }
+
+                let show = true;
+
+                // Tekstfilter
+                if (q) {
+                    const combined = ((item.name || '') + ' ' + (item.desc || '')).toLowerCase();
+                    if (!combined.includes(q)) show = false;
+                }
+
+                // Høyde
+                const h = typeof item.height === 'number'
+                    ? item.height
+                    : parseFloat(item.height || 'NaN');
+
+                if (!isNaN(minH) && !isNaN(h) && h < minH) show = false;
+                if (!isNaN(maxH) && !isNaN(h) && h > maxH) show = false;
+
+                // Status
+                if (statusFilter !== 'all') {
+                    const s = (item.status || '').toLowerCase();
+                    if (statusFilter === 'pending' && s !== 'pending') show = false;
+                    else if (statusFilter === 'approved' && s !== 'approved') show = false;
+                    else if (statusFilter === 'other' && (s === 'pending' || s === 'approved')) show = false;
+                }
+
+                // Dato
+                if (fromDate || toDate) {
+                    const created = item.createdAt ? new Date(item.createdAt) : null;
+                    if (!created || isNaN(created.getTime())) {
+                        show = false;
+                    } else {
+                        if (fromDate && created < fromDate) show = false;
+                        if (toDate && created > toDate) show = false;
+                    }
+                }
+
+                if (show) {
+                    row.classList.remove('hidden');
+                    visible++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            if (countEl) {
+                countEl.textContent = `Showing ${visible} of ${rows.length} obstacles`;
+            }
+        }
+
+        // --- Mini-kart (Leaflet) ---
         const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
         const maps = Array.from(document.querySelectorAll('.mini-map'));
 
-        function initMap(div){
-          if(div.dataset.inited) return;
-          div.dataset.inited = "1";
-          div.classList.remove('map-skel');
+        function initMap(div) {
+            if (div.dataset.inited) return;
+            div.dataset.inited = "1";
+            div.classList.remove('map-skel');
 
-          const lat = JSON.parse(div.getAttribute('data-lat') || '0');
-          const lng = JSON.parse(div.getAttribute('data-lng') || '0');
-          let gjRaw = div.getAttribute('data-geo');
-          let gj = null;
-          try {
-              gj = JSON.parse(gjRaw || '""');
-              if (typeof gj === 'string') gj = gj ? JSON.parse(gj) : null;
-          } catch {}
+            const lat = JSON.parse(div.getAttribute('data-lat') || '0');
+            const lng = JSON.parse(div.getAttribute('data-lng') || '0');
+            let gjRaw = div.getAttribute('data-geo');
+            let gj = null;
 
-          const m = L.map(div, {
-              zoomControl:false,
-              attributionControl:false,
-              dragging:false,
-              scrollWheelZoom:false,
-              doubleClickZoom:false,
-              boxZoom:false,
-              keyboard:false
-          });
-          L.tileLayer(tiles, { maxZoom:19 }).addTo(m);
-
-          // Tegn GeoJSON hvis vi har; ellers marker ved lat/lng (om satt)
-          if (gj) {
-            const layer = L.geoJSON(gj, { style:{ color:'#2563eb', weight:3 } }).addTo(m);
             try {
-              const b = layer.getBounds();
-              if (b && b.isValid()) { m.fitBounds(b, { padding:[5,5] }); }
-              else { m.setView([63.4,10.4], 5); }
-            } catch { m.setView([63.4,10.4], 5); }
-          } else if ((lat || lng) && !Number.isNaN(lat) && !Number.isNaN(lng)) {
-            L.marker([lat, lng]).addTo(m);
-            m.setView([lat, lng], 13);
-          } else {
-            m.setView([63.4,10.4], 5); // fallback Norge
-          }
+                gj = JSON.parse(gjRaw || '""');
+                if (typeof gj === 'string') gj = gj ? JSON.parse(gj) : null;
+            } catch { }
+
+            const m = L.map(div, {
+                zoomControl: false,
+                attributionControl: false,
+                dragging: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            });
+
+            L.tileLayer(tiles, { maxZoom: 19 }).addTo(m);
+
+            if (gj) {
+                const layer = L.geoJSON(gj, { style: { color: '#38bdf8', weight: 2 } }).addTo(m);
+                try {
+                    const b = layer.getBounds();
+                    if (b && b.isValid()) {
+                        m.fitBounds(b, { padding: [5, 5] });
+                    } else {
+                        m.setView([63.4, 10.4], 5);
+                    }
+                } catch {
+                    m.setView([63.4, 10.4], 5);
+                }
+            } else if ((lat || lng) && !Number.isNaN(lat) && !Number.isNaN(lng)) {
+                L.marker([lat, lng]).addTo(m);
+                m.setView([lat, lng], 13);
+            } else {
+                m.setView([63.4, 10.4], 5);
+            }
         }
 
-        const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries=>{
-          entries.forEach(e => { if(e.isIntersecting) initMap(e.target); });
-        }, { rootMargin: '200px' }) : null;
+        const io = 'IntersectionObserver' in window
+            ? new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) initMap(e.target);
+                });
+            }, { rootMargin: '200px' })
+            : null;
 
-        maps.forEach(div => { if (io) io.observe(div); else initMap(div); });
+        maps.forEach(div => {
+            if (io) io.observe(div);
+            else initMap(div);
+        });
+
+        // --- Init filtrering ---
+        (function initFilters() {
+            const inputs = [
+                document.getElementById('filter-text'),
+                document.getElementById('filter-min-height'),
+                document.getElementById('filter-max-height'),
+                document.getElementById('filter-status'),
+                document.getElementById('filter-from-date'),
+                document.getElementById('filter-to-date')
+            ];
+
+            inputs.forEach(el => {
+                if (!el) return;
+                el.addEventListener('input', applyAdminFilters);
+                el.addEventListener('change', applyAdminFilters);
+            });
+
+            applyAdminFilters();
+        })();
     </script>
-</body>
-</html>
+}

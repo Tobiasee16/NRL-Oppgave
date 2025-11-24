@@ -1,0 +1,82 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Profile";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="max-w-xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- Title -->
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+            My Profile
+        </h1>
+        <p class="text-sm text-slate-400">
+            Manage your account information.
+        </p>
+    </div>
+
+    <!-- Status message -->
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <!-- Card -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl backdrop-blur px-6 py-6">
+
+        <form id="profile-form" method="post" class="space-y-6">
+
+            <!-- Validation summary -->
+            <div asp-validation-summary="ModelOnly"
+                 class="text-sm text-rose-300 bg-rose-950/40 border border-rose-600/40 rounded-xl px-3 py-2 hidden"
+                 role="alert">
+            </div>
+
+            <!-- Username (readonly) -->
+            <div class="space-y-1">
+                <label asp-for="Username"
+                       class="block text-sm font-medium text-slate-200">
+                    Username
+                </label>
+
+                <input asp-for="Username"
+                       disabled
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-3 py-2 text-sm text-slate-400 cursor-not-allowed" />
+
+                <span asp-validation-for="Username" class="text-sm text-rose-400"></span>
+            </div>
+
+            <!-- Phone number -->
+            <div class="space-y-1">
+                <label asp-for="Input.PhoneNumber"
+                       class="block text-sm font-medium text-slate-200">
+                    Phone number
+                </label>
+
+                <input asp-for="Input.PhoneNumber"
+                       placeholder="Enter your phone number"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 shadow-sm
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+
+                <span asp-validation-for="Input.PhoneNumber" class="text-sm text-rose-400"></span>
+            </div>
+
+            <!-- Save -->
+            <div>
+                <button id="update-profile-button"
+                        type="submit"
+                        class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                               shadow-lg shadow-sky-500/30 transition
+                               hover:bg-sky-700 active:scale-[0.98]">
+                    Save changes
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

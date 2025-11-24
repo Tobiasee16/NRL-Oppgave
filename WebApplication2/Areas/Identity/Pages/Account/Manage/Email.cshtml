@@ -1,0 +1,105 @@
+﻿@page
+@model EmailModel
+@{
+    ViewData["Title"] = "Manage Email";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+<div class="max-w-xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- Title -->
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+            Manage Email
+        </h1>
+        <p class="text-sm text-slate-400">
+            Update your account email address.
+        </p>
+    </div>
+
+    <!-- Status message -->
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl backdrop-blur px-6 py-6">
+        <form id="email-form" method="post" class="space-y-6">
+
+            <!-- Validation summary -->
+            <div asp-validation-summary="All"
+                 class="hidden text-sm text-rose-300 bg-rose-950/40 border border-rose-600/40 rounded-xl px-3 py-2"
+                 role="alert">
+            </div>
+
+            <!-- Current email -->
+            @if (Model.IsEmailConfirmed)
+            {
+                <div class="space-y-1">
+                    <label asp-for="Email"
+                           class="block text-sm font-medium text-slate-200">
+                        Current email
+                    </label>
+
+                    <div class="flex items-center">
+                        <input asp-for="Email"
+                               disabled
+                               class="w-full rounded-l-xl border border-slate-700 bg-slate-950/50 px-3 py-2 text-sm text-slate-300
+                                          cursor-not-allowed" />
+
+                        <span class="h-full flex items-center px-3 rounded-r-xl bg-slate-800 border border-l-0 border-slate-700 text-green-400 text-lg">
+                            ✓
+                        </span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-2">
+                    <label asp-for="Email"
+                           class="block text-sm font-medium text-slate-200">
+                        Current email
+                    </label>
+
+                    <input asp-for="Email"
+                           disabled
+                           class="w-full rounded-xl border border-slate-700 bg-slate-950/50 px-3 py-2 text-sm text-slate-300
+                                      cursor-not-allowed" />
+
+                </div>
+            }
+
+            <!-- New email -->
+            <div class="space-y-1">
+                <label asp-for="Input.NewEmail"
+                       class="block text-sm font-medium text-slate-200">
+                    New email
+                </label>
+
+                <input asp-for="Input.NewEmail"
+                       autocomplete="email"
+                       aria-required="true"
+                       placeholder="Enter your new email"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 shadow-sm
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+
+                <span asp-validation-for="Input.NewEmail" class="text-sm text-rose-400"></span>
+            </div>
+
+            <!-- Save button -->
+            <div>
+                <button id="change-email-button"
+                        type="submit"
+                        asp-page-handler="ChangeEmail"
+                        class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                               shadow-lg shadow-sky-500/30 transition
+                               hover:bg-sky-700 active:scale-[0.98]">
+                    Change email
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

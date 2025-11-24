@@ -1,150 +1,528 @@
 ﻿@model IEnumerable<WebApplication2.Models.ObstacleData>
 @using System.Text.Json
 @{
-    Layout = null;
-    ViewData["Title"] = "Admin – All Obstacles on Map";
+    ViewData["Title"] = "All obstacles on map";
     var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.tailwindcss.com"></script>
+@section Head {
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Leaflet + (valgfritt) MarkerCluster for bedre oversikt ved mange punkt -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- MarkerCluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-  <title>@ViewData["Title"]</title>
-  <style>
-    #map { height: 70vh; }
-  </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-  <header class="w-full border-b bg-white">
-    <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-      <a asp-controller="Home" asp-action="Index" class="text-lg font-semibold">NRL Application</a>
-      <nav class="hidden sm:flex gap-4 text-sm text-gray-600">
-          @if (User.IsInRole("Admin"))
-          {
-              <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Admin Panel</a>
-          }
-          else
-          {
-              <a asp-controller="Admin" asp-action="Index" class="hover:text-blue-600">Report list</a>
-          }
-        
-        <a asp-controller="Obstacle" asp-action="DataForm" class="hover:text-blue-600">Register</a>
-      </nav>
+    <style>
+        #map {
+            height: 70vh;
+        }
+
+        .obstacle-marker {
+            width: 16px;
+            height: 16px;
+            border-radius: 9999px;
+            border: 2px solid #020617; /* slate-950 */
+        }
+        .obstacle-marker-low {
+            background-color: #22c55e; /* grønn */
+        }
+        .obstacle-marker-mid {
+            background-color: #facc15; /* gul */
+        }
+        .obstacle-marker-high {
+            background-color: #f97316; /* oransje */
+        }
+
+        .obstacle-row-active {
+            outline: 2px solid rgba(56, 189, 248, 0.8); /* sky-400 */
+            outline-offset: 2px;
+        }
+    </style>
+}
+
+<div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+                All obstacles
+            </h1>
+            <p class="text-sm text-slate-400">
+                Geographic overview and list of all reported obstacles.
+            </p>
+        </div>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-controller="Admin" asp-action="Index"
+               class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
+                      hover:bg-slate-800 hover:border-slate-600 transition">
+                Back to admin panel
+            </a>
+        }
+        else
+        {
+            <a asp-controller="Admin" asp-action="Index"
+               class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
+                      hover:bg-slate-800 hover:border-slate-600 transition">
+                Back to reports
+            </a>
+        }
     </div>
-  </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-8">
-    <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-semibold">All Obstacles on Map</h1>
-      @if (User.IsInRole("Admin"))
-      {
-          <a asp-controller="Admin" asp-action="Index"
-         class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 font-medium
-                shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
-        Back to Admin Panel</a>
-      }
-      else
-      {
-          <a asp-controller="Admin" asp-action="Index"
-         class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 font-medium
-                shadow hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition">
-        Back to Reports</a>
-      }
-      
-      
-    </div>
+    <!-- Filterpanel + view toggle -->
+    <section class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4 space-y-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Filters
+                </p>
+                <p class="text-xs text-slate-500">
+                    Filter by name, description, height and date.
+                </p>
+            </div>
 
-    <div id="map" class="rounded-xl border shadow bg-white"></div>
-  </main>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-map-view"
+                        class="rounded-xl px-3 py-1.5 text-xs font-medium bg-sky-600 text-white shadow shadow-sky-500/40 hover:bg-sky-700">
+                    Map view
+                </button>
+                <button type="button" id="btn-list-view"
+                        class="rounded-xl px-3 py-1.5 text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700">
+                    List view
+                </button>
+            </div>
+        </div>
 
-  <footer class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500">
-    © @DateTime.Now.Year — WebApplication2
-  </footer>
+        <!-- Øverste rad: tekst + høyde -->
+        <div class="grid gap-3 lg:grid-cols-[2fr_1fr_1fr]">
+            <div>
+                <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
+                    Search (name / description)
+                </label>
+                <input id="filter-text"
+                       type="text"
+                       placeholder="Search obstacles..."
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
 
-  <script>
-    const map = L.map('map').setView([63.4, 10.4], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+            <div>
+                <label for="filter-min-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Min height (m)
+                </label>
+                <input id="filter-min-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="0"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
 
-    const allGroup = L.featureGroup().addTo(map);
-    const markerCluster = L.markerClusterGroup({ showCoverageOnHover: false });
+            <div>
+                <label for="filter-max-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Max height (m)
+                </label>
+                <input id="filter-max-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="e.g. 50"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+        </div>
 
-    // Data fra server (serialisert trygt)
-    const items = @Html.Raw(JsonSerializer.Serialize(Model.Select(m => new {
-        id = m.Id,
-        name = m.ObstacleName,
-        height = m.ObstacleHeight,
-        desc = m.ObstacleDescription,
-        lat = m.Latitude,
-        lng = m.Longitude,
-        gj = m.GeometryGeoJson
-    }), jsonOpts));
+        <!-- Nederste rad: dato -->
+        <div class="grid gap-3 md:grid-cols-2">
+            <div>
+                <label for="filter-from-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    From date
+                </label>
+                <input id="filter-from-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+            <div>
+                <label for="filter-to-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    To date
+                </label>
+                <input id="filter-to-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+        </div>
 
-    // Legg alle features (GeoJSON først, ellers marker)
-    items.forEach(it => {
-      let added = false;
+        <div class="flex items-center justify-between pt-1 text-xs">
+            <p id="obstacle-count" class="text-slate-400">
+                <!-- fylles av JS -->
+            </p>
+            <p class="text-slate-500">
+                Color by height: <span class="text-emerald-400">low</span>, <span class="text-amber-300">medium</span>, <span class="text-orange-300">high</span>.
+            </p>
+        </div>
+    </section>
 
-      if (it.gj) {
-        try {
-          const gj = (typeof it.gj === 'string') ? JSON.parse(it.gj) : it.gj;
-          const layer = L.geoJSON(gj, {
-            style: { color: '#2563eb', weight: 3 }
-          });
-          layer.eachLayer(l => {
-            // popup per del-geometri
-            if (l.getBounds) {
-              l.bindPopup(`<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`);
-            } else if (l.getLatLng) {
-              l.bindPopup(`<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`);
+    <!-- Map view -->
+    <section id="map-wrapper"
+             class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4">
+        <div id="map" class="rounded-xl shadow-inner border border-slate-800 bg-slate-950"></div>
+    </section>
+
+    <!-- List view -->
+    <section id="list-wrapper"
+             class="hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4">
+        <div id="list-view"
+             class="max-h-[70vh] overflow-y-auto space-y-3 text-sm">
+            <!-- fylles av JS -->
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        // --- Data fra server, inkl. Created ---
+        const allItems = @Html.Raw(JsonSerializer.Serialize(
+            Model.Select(m => new {
+                id = m.Id,
+                name = m.ObstacleName,
+                height = m.ObstacleHeight,
+                desc = m.ObstacleDescription,
+                lat = m.Latitude,
+                lng = m.Longitude,
+                gj = m.GeometryGeoJson,
+                created = m.CreatedAt
+            }),
+            jsonOpts
+        ));
+
+        let filteredItems = allItems.slice();
+        let currentView = 'map';
+        let featureIndex = {}; // id -> [Leaflet layers]
+
+        // --- Leaflet setup ---
+        const map = L.map('map').setView([63.4, 10.4], 5);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const allGroup = L.featureGroup().addTo(map);
+        const markerCluster = L.markerClusterGroup({ showCoverageOnHover: false });
+
+        function getHeightColor(h) {
+            const height = typeof h === 'number' ? h : parseFloat(h || '0');
+            if (isNaN(height)) return '#38bdf8';
+            if (height < 15) return '#22c55e';
+            if (height < 45) return '#facc15';
+            return '#f97316';
+        }
+
+        function getMarkerClass(h) {
+            const height = typeof h === 'number' ? h : parseFloat(h || '0');
+            if (isNaN(height)) return 'obstacle-marker obstacle-marker-mid';
+            if (height < 15) return 'obstacle-marker obstacle-marker-low';
+            if (height < 45) return 'obstacle-marker obstacle-marker-mid';
+            return 'obstacle-marker obstacle-marker-high';
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"'`=\/]/g, ch => (
+                {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',
+                 "'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[ch]
+            ));
+        }
+
+        function formatCreated(dt) {
+            if (!dt) return '';
+            const d = new Date(dt);
+            if (isNaN(d.getTime())) return '';
+            return d.toLocaleString(); // kan evt. strammes til 'nb-NO'
+        }
+
+        function clearLayers() {
+            allGroup.clearLayers();
+            markerCluster.clearLayers();
+            featureIndex = {};
+        }
+
+        function buildMapLayers(items) {
+            clearLayers();
+
+            items.forEach(it => {
+                let added = false;
+
+                const popupHtmlBase =
+                    `<b>${escapeHtml(it.name ?? "")}</b><br/>` +
+                    `Height: ${it.height ?? ""} m` +
+                    (it.created ? `<br/><span style="font-size:11px;opacity:0.8;">Reported: ${escapeHtml(formatCreated(it.created))}</span>` : "");
+
+                if (it.gj) {
+                    try {
+                        const gj = typeof it.gj === 'string' ? JSON.parse(it.gj) : it.gj;
+                        const layer = L.geoJSON(gj, {
+                            style: {
+                                color: getHeightColor(it.height),
+                                weight: 2
+                            }
+                        });
+
+                        layer.eachLayer(l => {
+                            l._obstacleId = it.id;
+                            l.bindPopup(popupHtmlBase);
+                            l.on('click', () => highlightListRow(it.id));
+                            if (!featureIndex[it.id]) featureIndex[it.id] = [];
+                            featureIndex[it.id].push(l);
+                        });
+
+                        layer.addTo(allGroup);
+                        added = true;
+                    } catch { }
+                }
+
+                if (!added && typeof it.lat === 'number' && typeof it.lng === 'number') {
+                    const marker = L.marker([it.lat, it.lng], {
+                        icon: L.divIcon({
+                            className: getMarkerClass(it.height),
+                            iconSize: [18, 18]
+                        })
+                    }).bindPopup(popupHtmlBase);
+
+                    marker._obstacleId = it.id;
+                    marker.on('click', () => highlightListRow(it.id));
+
+                    if (!featureIndex[it.id]) featureIndex[it.id] = [];
+                    featureIndex[it.id].push(marker);
+
+                    markerCluster.addLayer(marker);
+                }
+            });
+
+            if (markerCluster.getLayers().length > 0) {
+                allGroup.addLayer(markerCluster);
             }
-          });
-          layer.addTo(allGroup);
-          added = true;
-        } catch (e) { /* ugyldig GeoJSON – fall back under */ }
-      }
 
-      if (!added && typeof it.lat === 'number' && typeof it.lng === 'number' && (it.lat !== 0 || it.lng !== 0)) {
-        const m = L.marker([it.lat, it.lng]).bindPopup(
-          `<b>${escapeHtml(it.name ?? "")}</b><br/>Height: ${it.height ?? ""} m`
-        );
-        markerCluster.addLayer(m);
-        added = true;
-      }
-    });
+            try {
+                const b = allGroup.getBounds();
+                if (b && b.isValid()) {
+                    map.fitBounds(b, { padding: [25, 25] });
+                }
+            } catch { }
+        }
 
-    // MarkerCluster til kartet (etter at vi har lagt til markører)
-    if (markerCluster.getLayers().length > 0) {
-      allGroup.addLayer(markerCluster);
-    }
+        // --- Listevisning ---
+        function buildList(items) {
+            const list = document.getElementById('list-view');
+            if (!list) return;
 
-    // Fit bounds (fallback hvis tomt)
-    try {
-      const b = allGroup.getBounds();
-      if (b && b.isValid()) {
-        map.fitBounds(b, { padding: [30, 30] });
-      } else {
-        map.setView([63.4, 10.4], 5);
-      }
-    } catch {
-      map.setView([63.4, 10.4], 5);
-    }
+            if (!items.length) {
+                list.innerHTML = `<p class="text-sm text-slate-400">No obstacles match the current filters.</p>`;
+                return;
+            }
 
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"'`=\/]/g, ch => (
-        {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'}[ch]
-      ));
-    }
-  </script>
-</body>
-</html>
+            const rows = items.map(it => {
+                const h = it.height ?? '';
+                const desc = it.desc ?? '';
+                const name = it.name ?? '(no name)';
+                const color = getHeightColor(it.height);
+                const createdText = formatCreated(it.created) || 'Unknown';
+
+                let heightLabel = 'Unknown';
+                const hv = parseFloat(h);
+                if (!isNaN(hv)) {
+                    if (hv < 15) heightLabel = 'Low';
+                    else if (hv < 45) heightLabel = 'Medium';
+                    else heightLabel = 'High';
+                }
+
+                return `
+<button type="button"
+        class="obstacle-row w-full text-left rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 hover:bg-slate-800 transition"
+        data-id="${it.id}"
+        style="border-left-width: 4px; border-left-color: ${color};">
+  <div class="flex items-start justify-between gap-3">
+    <div class="space-y-1">
+      <p class="text-sm font-semibold text-slate-50">${escapeHtml(name)}</p>
+      <p class="text-xs text-slate-400 line-clamp-2">${escapeHtml(desc)}</p>
+      <p class="text-[11px] text-slate-500 mt-1">Reported: ${escapeHtml(createdText)}</p>
+    </div>
+    <div class="flex flex-col items-end gap-1">
+      <span class="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[11px] text-slate-100">
+        ${!isNaN(parseFloat(h)) ? escapeHtml(String(h)) + ' m' : '–'}
+      </span>
+      <span class="text-[10px] text-slate-400">${heightLabel}</span>
+    </div>
+  </div>
+</button>`;
+            }).join('');
+
+            list.innerHTML = rows;
+
+            list.querySelectorAll('.obstacle-row').forEach(el => {
+                const id = el.getAttribute('data-id');
+                el.addEventListener('mouseenter', () => {
+                    const layers = featureIndex[id];
+                    if (layers) {
+                        layers.forEach(l => {
+                            if (l.openPopup) l.openPopup();
+                        });
+                    }
+                });
+                el.addEventListener('mouseleave', () => {
+                    const layers = featureIndex[id];
+                    if (layers) {
+                        layers.forEach(l => {
+                            if (l.closePopup) l.closePopup();
+                        });
+                    }
+                });
+                el.addEventListener('click', () => {
+                    focusOnMap(id);
+                });
+            });
+        }
+
+        function highlightListRow(id) {
+            const list = document.getElementById('list-view');
+            if (!list) return;
+
+            list.querySelectorAll('.obstacle-row-active').forEach(el =>
+                el.classList.remove('obstacle-row-active')
+            );
+
+            const target = list.querySelector(`[data-id="${id}"]`);
+            if (target) {
+                target.classList.add('obstacle-row-active');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function focusOnMap(id) {
+            const layers = featureIndex[id];
+            if (!layers || !layers.length) return;
+
+            const layer = layers[0];
+
+            if (layer.getBounds) {
+                const b = layer.getBounds();
+                if (b && b.isValid()) {
+                    map.fitBounds(b, { padding: [40, 40] });
+                }
+            } else if (layer.getLatLng) {
+                const ll = layer.getLatLng();
+                map.setView(ll, 12);
+            }
+
+            if (layer.openPopup) {
+                layer.openPopup();
+            }
+
+            setView('map');
+        }
+
+        // --- Filters inkl. dato ---
+        function applyFilters() {
+            const textInput = document.getElementById('filter-text');
+            const minInput = document.getElementById('filter-min-height');
+            const maxInput = document.getElementById('filter-max-height');
+            const fromInput = document.getElementById('filter-from-date');
+            const toInput = document.getElementById('filter-to-date');
+
+            const q = (textInput?.value || '').toLowerCase();
+            const minH = parseFloat(minInput?.value || '');
+            const maxH = parseFloat(maxInput?.value || '');
+
+            const fromVal = fromInput?.value || '';
+            const toVal = toInput?.value || '';
+
+            const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+            const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+            filteredItems = allItems.filter(it => {
+                const combined = ((it.name || '') + ' ' + (it.desc || '')).toLowerCase();
+                if (q && !combined.includes(q)) return false;
+
+                const h = typeof it.height === 'number' ? it.height : parseFloat(it.height || 'NaN');
+                if (!isNaN(minH) && !isNaN(h) && h < minH) return false;
+                if (!isNaN(maxH) && !isNaN(h) && h > maxH) return false;
+
+                if (fromDate || toDate) {
+                    const created = it.created ? new Date(it.created) : null;
+                    if (!created || isNaN(created.getTime())) return false;
+
+                    if (fromDate && created < fromDate) return false;
+                    if (toDate && created > toDate) return false;
+                }
+
+                return true;
+            });
+
+            updateCount();
+            buildMapLayers(filteredItems);
+            buildList(filteredItems);
+        }
+
+        function updateCount() {
+            const el = document.getElementById('obstacle-count');
+            if (!el) return;
+            el.textContent = `Showing ${filteredItems.length} of ${allItems.length} obstacles`;
+        }
+
+        // --- View toggle ---
+        function setView(view) {
+            currentView = view;
+            const mapWrapper = document.getElementById('map-wrapper');
+            const listWrapper = document.getElementById('list-wrapper');
+            const btnMap = document.getElementById('btn-map-view');
+            const btnList = document.getElementById('btn-list-view');
+
+            if (!mapWrapper || !listWrapper || !btnMap || !btnList) return;
+
+            if (view === 'map') {
+                mapWrapper.classList.remove('hidden');
+                listWrapper.classList.add('hidden');
+
+                btnMap.className = "rounded-xl px-3 py-1.5 text-xs font-medium bg-sky-600 text-white shadow shadow-sky-500/40 hover:bg-sky-700";
+                btnList.className = "rounded-xl px-3 py-1.5 text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700";
+
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 150);
+            } else {
+                mapWrapper.classList.add('hidden');
+                listWrapper.classList.remove('hidden');
+
+                btnList.className = "rounded-xl px-3 py-1.5 text-xs font-medium bg-sky-600 text-white shadow shadow-sky-500/40 hover:bg-sky-700";
+                btnMap.className = "rounded-xl px-3 py-1.5 text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700";
+            }
+        }
+
+        // --- Init ---
+        (function init() {
+            buildMapLayers(filteredItems);
+            buildList(filteredItems);
+            updateCount();
+            setView('map');
+
+            const textInput = document.getElementById('filter-text');
+            const minInput = document.getElementById('filter-min-height');
+            const maxInput = document.getElementById('filter-max-height');
+            const fromInput = document.getElementById('filter-from-date');
+            const toInput = document.getElementById('filter-to-date');
+
+            [textInput, minInput, maxInput, fromInput, toInput].forEach(el => {
+                if (!el) return;
+                el.addEventListener('input', applyFilters);
+            });
+
+            const btnMap = document.getElementById('btn-map-view');
+            const btnList = document.getElementById('btn-list-view');
+            if (btnMap) btnMap.addEventListener('click', () => setView('map'));
+            if (btnList) btnList.addEventListener('click', () => setView('list'));
+        })();
+    </script>
+}

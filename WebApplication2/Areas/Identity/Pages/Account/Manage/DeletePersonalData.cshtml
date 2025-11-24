@@ -1,0 +1,70 @@
+﻿@page
+@model DeletePersonalDataModel
+@{
+    ViewData["Title"] = "Delete Personal Data";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="max-w-xl mx-auto px-6 py-10 space-y-8">
+
+    <!-- Title -->
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+            Delete personal data
+        </h1>
+        <p class="text-sm text-slate-400">
+            This will permanently delete your account and all associated data.
+        </p>
+    </div>
+
+    <!-- Warning -->
+    <div class="rounded-2xl border border-rose-600/60 bg-rose-950/60 px-4 py-3 text-sm text-rose-100 shadow-lg">
+        <p class="font-semibold">
+            Deleting this data will permanently remove your account, and this cannot be recovered.
+        </p>
+        <p class="mt-1 text-rose-200/80">
+            Please be sure you understand the consequences before continuing.
+        </p>
+    </div>
+
+    <!-- Form -->
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 shadow-xl backdrop-blur px-6 py-6">
+        <form id="delete-user" method="post" class="space-y-5">
+            <div asp-validation-summary="ModelOnly"
+                 class="text-sm text-rose-300 bg-rose-950/40 border border-rose-600/40 rounded-xl px-3 py-2"
+                 role="alert">
+            </div>
+
+            @if (Model.RequirePassword)
+            {
+                <div class="space-y-1">
+                    <label asp-for="Input.Password"
+                           class="block text-sm font-medium text-slate-200">
+                        Password
+                    </label>
+                    <input asp-for="Input.Password"
+                           autocomplete="current-password"
+                           aria-required="true"
+                           placeholder="Enter your password to confirm"
+                           class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                                      placeholder:text-slate-500 shadow-sm
+                                      focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500" />
+                    <span asp-validation-for="Input.Password" class="text-sm text-rose-400"></span>
+                </div>
+            }
+
+            <div class="pt-2">
+                <button type="submit"
+                        class="w-full rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white
+                               shadow-lg shadow-rose-500/30 transition
+                               hover:bg-rose-800 active:scale-[0.98]">
+                    Delete data and close my account
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

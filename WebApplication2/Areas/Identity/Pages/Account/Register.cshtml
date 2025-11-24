@@ -1,0 +1,142 @@
+﻿@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="min-h-[calc(100vh-8rem)] flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md space-y-6">
+        <!-- Header -->
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+                Create account
+            </h1>
+            <p class="text-sm text-slate-400">
+                Register to report and follow aviation obstacles.
+            </p>
+        </div>
+
+        <!-- Register form -->
+        <section class="rounded-2xl border border-slate-800 bg-slate-900/80 px-6 py-6 shadow-xl">
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="space-y-4">
+
+                <!-- Validation summary -->
+                <div asp-validation-summary="ModelOnly"
+                     class="text-sm mb-2 text-rose-300"
+                     role="alert">
+                </div>
+
+                <!-- Email -->
+                <div class="space-y-1">
+                    <label asp-for="Input.Email"
+                           class="block text-sm font-medium text-slate-200">
+                        Email
+                    </label>
+                    <input asp-for="Input.Email"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="name@example.com"
+                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Input.Email"
+                          class="text-sm text-rose-400"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-1">
+                    <label asp-for="Input.Password"
+                           class="block text-sm font-medium text-slate-200">
+                        Password
+                    </label>
+                    <input asp-for="Input.Password"
+                           autocomplete="new-password"
+                           aria-required="true"
+                           placeholder="••••••••"
+                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Input.Password"
+                          class="text-sm text-rose-400"></span>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="space-y-1">
+                    <label asp-for="Input.ConfirmPassword"
+                           class="block text-sm font-medium text-slate-200">
+                        Confirm password
+                    </label>
+                    <input asp-for="Input.ConfirmPassword"
+                           autocomplete="new-password"
+                           aria-required="true"
+                           placeholder="••••••••"
+                           class="block w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 placeholder-slate-500
+                                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+                    <span asp-validation-for="Input.ConfirmPassword"
+                          class="text-sm text-rose-400"></span>
+                </div>
+
+                <!-- Submit button -->
+                <div>
+                    <button id="registerSubmit" type="submit"
+                            class="w-full rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                                   shadow-lg shadow-sky-500/30 transition
+                                   hover:bg-sky-700 active:scale-[0.98]">
+                        Register
+                    </button>
+                </div>
+
+                <!-- Link to Login -->
+                <div class="pt-2 text-sm text-slate-300">
+                    <p>
+                        Already have an account?
+                        <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl"
+                           class="text-sky-300 hover:text-sky-200 hover:underline underline-offset-2">
+                            Log in
+                        </a>
+                    </p>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- External login providers -->
+        <section class="text-sm text-slate-300">
+            @if ((Model.ExternalLogins?.Count ?? 0) == 0)
+            {
+                <p class="text-xs text-slate-500 text-center">
+                    No external authentication providers are configured.
+                </p>
+            }
+            else
+            {
+                <div class="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-4">
+                    <h3 class="text-sm font-medium text-slate-100 mb-3 text-center">
+                        Or continue with
+                    </h3>
+
+                    <form id="external-account"
+                          asp-page="./ExternalLogin"
+                          asp-route-returnUrl="@Model.ReturnUrl"
+                          method="post"
+                          class="flex flex-wrap justify-center gap-2">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            <button type="submit"
+                                    class="inline-flex items-center justify-center rounded-full border border-slate-700
+                                                   bg-slate-900 px-4 py-1.5 text-xs font-medium text-slate-100
+                                                   hover:bg-slate-800 hover:border-sky-500 transition"
+                                    name="provider"
+                                    value="@provider.Name"
+                                    title="Register using your @provider.DisplayName account">
+                                @provider.DisplayName
+                            </button>
+                        }
+                    </form>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

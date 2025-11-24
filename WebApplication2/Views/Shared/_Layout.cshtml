@@ -4,75 +4,185 @@
     string Active(string c, string? a = null) =>
         controller.Equals(c, StringComparison.OrdinalIgnoreCase) &&
         (a is null || action.Equals(a, StringComparison.OrdinalIgnoreCase))
-            ? "active" : "";
+            ? "text-sky-200 bg-sky-900"
+            : "text-slate-300 hover:text-white hover:bg-slate-800";
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    @RenderSection("Head", required: false)
+</head>
+
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - NRL Application</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <title>@ViewData["Title"] - Luftfartshindringer</title>
+
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Din egen CSS (valgfritt, for spesialtilpasninger) -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" />
 </head>
-<body>
-<header>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
-        <div class="container">
-                <a class="navbar-brand fw-semibold letter-tight" asp-controller="Home" asp-action="Index">NRL Application</a>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased">
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                    aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <!-- HEADER / NAVBAR -->
+    <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+        <nav class="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+            <!-- Brand -->
+            <a asp-controller="Home" asp-action="Index"
+               class="flex items-center gap-3 group">
+                <img src="~/images/kartverket-logo.png"
+                     alt="NRL Logo"
+                     class="h-12 w-12 object-contain rounded-lg shadow-lg shadow-sky-500/20" />
 
-            <div id="mainNav" class="collapse navbar-collapse">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link @Active("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a>
+                <div class="flex flex-col leading-tight">
+                    <span class="text-sm font-semibold text-slate-50 group-hover:text-sky-100 transition-colors">
+                        Luftfartshindringer
+                    </span>
+                    <span class="text-[11px] text-slate-400">
+                        NRL · Kartlegging av luftfartshindre
+                    </span>
+                </div>
+            </a>
+
+            <!-- Desktop-nav -->
+            <div class="hidden md:flex items-center gap-6">
+                <ul class="flex items-center gap-2 text-sm">
+                    <li>
+                        <a asp-controller="Home" asp-action="Index"
+                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Home", "Index")">
+                            Home
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Active("Home", "Privacy")" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <li>
+                        <a asp-controller="Home" asp-action="Privacy"
+                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Home", "Privacy")">
+                            Privacy
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Active("Obstacle", "DataForm")" asp-controller="Obstacle" asp-action="DataForm">
+                    <li>
+                        <a asp-controller="Obstacle" asp-action="DataForm"
+                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Obstacle", "DataForm")">
                             Register Obstacle
                         </a>
                     </li>
-                    @* Vis Admin bare for Admin-rolle *@
                     @if (User.IsInRole("Admin"))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link @Active("Admin", "Index")" asp-controller="Admin" asp-action="Index">Admin</a>
+                        <li>
+                            <a asp-controller="Admin" asp-action="Index"
+                               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Admin", "Index")">
+                                Admin
+                            </a>
                         </li>
                     }
                 </ul>
 
-                @* Høyreside: standard Identity-partial (slik unngår vi duplikater) *@
-                @await Html.PartialAsync("_LoginPartial")
+                <!-- Login-del -->
+                <div class="flex items-center gap-3 text-sm [&>*]:flex [&>*]:items-center [&>*]:gap-2">
+                    @await Html.PartialAsync("_LoginPartial")
+                </div>
+
+            </div>
+
+            <!-- Mobile-menu button -->
+            <button id="mobile-menu-button"
+                    type="button"
+                    class="md:hidden inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-2.5 py-2 text-slate-200 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                <span class="sr-only">Toggle navigation</span>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="h-5 w-5"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="1.5"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+        </nav>
+
+        <!-- Mobile-menu -->
+        <div id="mobile-menu" class="md:hidden border-t border-slate-800 bg-slate-950/95 hidden">
+            <div class="max-w-6xl mx-auto px-4 py-3 space-y-3">
+                <nav class="space-y-1 text-sm">
+                    <a asp-controller="Home" asp-action="Index"
+                       class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Home", "Index")">
+                        <span>Home</span>
+                    </a>
+                    <a asp-controller="Home" asp-action="Privacy"
+                       class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Home", "Privacy")">
+                        <span>Privacy</span>
+                    </a>
+                    <a asp-controller="Obstacle" asp-action="DataForm"
+                       class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Obstacle", "DataForm")">
+                        <span>Register Obstacle</span>
+                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Index"
+                           class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Admin", "Index")">
+                            <span>Admin</span>
+                        </a>
+                    }
+                </nav>
+
+                <div class="pt-2 border-t border-slate-800 text-sm">
+                    @await Html.PartialAsync("_LoginPartial")
+                </div>
             </div>
         </div>
-    </nav>
-</header>
+    </header>
 
-<main class="py-4">
-    <div class="container">
-        @RenderBody()
-    </div>
-</main>
+    <!-- MAIN -->
+    <main class="flex-1">
+        <div class="max-w-6xl mx-auto px-4 py-6 lg:py-8">
+            @RenderBody()
+        </div>
+    </main>
 
-<footer class="border-top text-muted py-3">
-    <div class="container small">
-        © @DateTime.Now.Year – WebApplication2 ·
-        <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-    </div>
-</footer>
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-slate-950">
+        <div class="max-w-6xl mx-auto px-4 py-4 text-[11px] md:text-xs text-slate-400 flex flex-col md:flex-row items-center justify-between gap-2">
+            <span>© @DateTime.Now.Year – Luftfartshindringer (NRL) – NRL Application</span>
+            <span class="flex items-center gap-2">
+                <span class="hidden md:inline">Bygget med</span>
+                <span class="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-0.5 text-[11px]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
+                    <span>ASP.NET Core &amp; Tailwind CSS</span>
+                </span>
+                <a asp-controller="Home" asp-action="Privacy"
+                   class="text-sky-300 hover:text-sky-200 underline-offset-2 hover:underline">
+                    Privacy
+                </a>
+            </span>
+        </div>
+    </footer>
 
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-@await RenderSectionAsync("Scripts", required: false)
+    <!-- Scripts -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Enkel toggling av mobilmeny uten Bootstrap
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.getElementById("mobile-menu-button");
+            const menu = document.getElementById("mobile-menu");
+
+            if (btn && menu) {
+                btn.addEventListener("click", function () {
+                    menu.classList.toggle("hidden");
+                });
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,6 +1,241 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+
+    <!-- Header -->
+    <header class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-2xl bg-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
+                <span class="text-xs font-semibold text-white tracking-[0.18em]">NRL</span>
+            </div>
+            <div>
+                <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
+                    Privacy Policy
+                </h1>
+                <p class="text-sm text-slate-400">
+                    How this application collects, uses, and protects personal data.
+                </p>
+            </div>
+        </div>
+
+        <div class="text-xs text-slate-500">
+            <p class="font-medium text-slate-300">Status</p>
+            <p>Internal project – aviation obstacle reporting system.</p>
+        </div>
+    </header>
+
+    <!-- Layout: left overview, right main text -->
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_2fr]">
+
+        <!-- Overview / key points -->
+        <aside class="space-y-4">
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-5 py-5 space-y-3">
+                <h2 class="text-sm font-semibold text-slate-100">
+                    Summary
+                </h2>
+                <ul class="space-y-2 text-xs text-slate-300">
+                    <li>• Accounts use email and encrypted passwords.</li>
+                    <li>• Obstacle reports include height, description, and location data.</li>
+                    <li>• Data is used only for aviation obstacle handling and system security.</li>
+                    <li>• Admin users can review, approve, or delete reports.</li>
+                    <li>• You can request deletion of your account and data.</li>
+                </ul>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-5 py-5 space-y-3">
+                <h3 class="text-sm font-semibold text-slate-100">
+                    Data categories
+                </h3>
+                <dl class="space-y-2 text-xs text-slate-300">
+                    <div>
+                        <dt class="font-medium text-slate-200">Account</dt>
+                        <dd>Email, password (hashed), optional profile fields.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-200">Obstacle reports</dt>
+                        <dd>Name, description, height, coordinates, geometry, timestamps, status.</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-slate-200">Technical</dt>
+                        <dd>IP, browser metadata, session and authentication cookies.</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-5 py-4 space-y-2">
+                <h3 class="text-sm font-semibold text-slate-100">Your rights</h3>
+                <p class="text-xs text-slate-300">
+                    You may request access, correction, export, or deletion of your personal data,
+                    subject to applicable limitations and system requirements.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main content – English -->
+        <section class="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-6 py-6">
+            <h2 class="text-lg font-semibold text-slate-50">
+                1. Purpose of data processing
+            </h2>
+            <p class="text-sm text-slate-200">
+                This application is used to register, review, and visualize aviation obstacles. Personal data is processed
+                only to the extent necessary to provide authenticated access, handle obstacle reports, and maintain the
+                security and integrity of the system.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                2. Data we collect
+            </h2>
+
+            <h3 class="text-sm font-semibold text-slate-100 mt-2">
+                2.1 Account information
+            </h3>
+            <p class="text-sm text-slate-200">
+                When you create an account, the application stores your email address and a hashed version of your password.
+                Optional profile information, such as phone number, may also be stored if you choose to provide it.
+                These data are used exclusively for authentication, account administration, and secure access control.
+            </p>
+
+            <h3 class="text-sm font-semibold text-slate-100 mt-2">
+                2.2 Obstacle reports
+            </h3>
+            <p class="text-sm text-slate-200">
+                When you submit an obstacle, the application stores information such as obstacle name, height,
+                description, geographic coordinates, geometry (GeoJSON), time of submission, and processing status
+                (for example Pending, Approved, or Deleted). This information is necessary to maintain a reliable
+                overview of reported aviation obstacles and to support administrative review.
+            </p>
+
+            <h3 class="text-sm font-semibold text-slate-100 mt-2">
+                2.3 Technical and security-related information
+            </h3>
+            <p class="text-sm text-slate-200">
+                For operational and security purposes, the system may log technical information such as IP address,
+                browser metadata, server logs, and session or authentication cookies. These data are used solely to
+                operate and secure the application and are not used for profiling or marketing.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                3. Legal basis
+            </h2>
+            <p class="text-sm text-slate-200">
+                Personal data is processed on the basis of user consent, legitimate interest (for example system security
+                and quality of obstacle data), and, where applicable, contractual necessity in order to provide access to
+                the application’s functionality.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                4. Access and roles
+            </h2>
+            <p class="text-sm text-slate-200">
+                Access to data is restricted using role-based access control:
+            </p>
+            <ul class="list-disc list-inside text-sm text-slate-200 space-y-1">
+                <li><span class="font-medium">Administrators</span> can view and manage obstacle reports, including approving or deleting them.</li>
+                <li><span class="font-medium">Authenticated users</span> can submit obstacles and view reports, but cannot approve or delete them.</li>
+                <li><span class="font-medium">Unauthenticated users</span> have no access to account data or administrative functions.</li>
+            </ul>
+            <p class="text-sm text-slate-200">
+                Data is not sold or shared with third parties, unless required by law or necessary for compliance with
+                applicable regulations.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                5. Storage and retention
+            </h2>
+            <p class="text-sm text-slate-200">
+                Account information is kept for as long as the account is active. Obstacle reports are stored as long as
+                they are considered relevant for the system’s purpose or until they are deleted during administrative
+                maintenance. Technical logs are retained only for as long as necessary to ensure security and operation.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                6. Your rights
+            </h2>
+            <p class="text-sm text-slate-200">
+                Subject to applicable law, you have the right to:
+            </p>
+            <ul class="list-disc list-inside text-sm text-slate-200 space-y-1">
+                <li>Request access to the personal data stored about you.</li>
+                <li>Request correction of inaccurate or incomplete information.</li>
+                <li>Request deletion of your account and associated personal data.</li>
+                <li>Request export of your personal data where technically feasible.</li>
+                <li>Object to or request restriction of certain types of processing.</li>
+            </ul>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                7. Security measures
+            </h2>
+            <p class="text-sm text-slate-200">
+                The application uses industry-standard technical and organizational measures, including HTTPS, secure
+                password hashing, authorization based on roles, and restricted database access. The system is regularly
+                updated to reduce the risk of unauthorized access and data breaches.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                8. Cookies
+            </h2>
+            <p class="text-sm text-slate-200">
+                The application uses cookies primarily for authentication and session management. No cookies are used
+                for advertising or third-party tracking. Without these cookies, core functionality such as login and
+                secure navigation may not work as intended.
+            </p>
+
+            <h2 class="text-lg font-semibold text-slate-50">
+                9. Changes to this policy
+            </h2>
+            <p class="text-sm text-slate-200">
+                This Privacy Policy may be updated to reflect changes in functionality, security requirements, or
+                applicable laws and regulations. Material changes will be made available through this page.
+            </p>
+        </section>
+    </div>
+
+    <!-- Norwegian version -->
+    <section class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-6 py-6">
+        <div class="flex items-center justify-between gap-2">
+            <h2 class="text-lg font-semibold text-slate-50">
+                Personvernerklæring (norsk sammendrag)
+            </h2>
+            <span class="text-[11px] px-2 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-600">
+                Informasjonsside – ikke juridisk bindende oversettelse
+            </span>
+        </div>
+
+        <p class="text-sm text-slate-200">
+            Denne applikasjonen brukes til å registrere, behandle og visualisere luftfartshindringer. Personopplysninger
+            behandles kun i den grad det er nødvendig for å gi sikker innlogging, håndtere innmeldte hindringer og
+            ivareta sikker og stabil drift av løsningen.
+        </p>
+
+        <h3 class="text-sm font-semibold text-slate-100 mt-2">Hvilke opplysninger samles inn?</h3>
+        <ul class="list-disc list-inside text-sm text-slate-200 space-y-1">
+            <li><span class="font-medium">Kontoopplysninger:</span> e-postadresse, passord (lagret kryptert), samt eventuell valgfri informasjon du selv legger inn.</li>
+            <li><span class="font-medium">Hindringsdata:</span> navn, høyde, beskrivelse, geografisk plassering (koordinater og geometri), tidspunkt for registrering og status.</li>
+            <li><span class="font-medium">Tekniske data:</span> IP-adresse, nettleserinfo, sesjons- og innloggingscookies, samt grunnleggende driftslogger.</li>
+        </ul>
+
+        <h3 class="text-sm font-semibold text-slate-100 mt-2">Formål og tilgang</h3>
+        <p class="text-sm text-slate-200">
+            Opplysningene brukes for å muliggjøre registrering og kvalitetssikring av hindringer, og for å gi
+            administratorer mulighet til å godkjenne eller slette rapporter. Vanlige brukere kan registrere og se
+            innmeldinger, men ikke godkjenne eller slette dem. Opplysninger selges ikke videre og deles ikke med
+            tredjeparter, med mindre det følger av lov.
+        </p>
+
+        <h3 class="text-sm font-semibold text-slate-100 mt-2">Lagring og rettigheter</h3>
+        <p class="text-sm text-slate-200">
+            Kontoopplysninger lagres så lenge kontoen er aktiv. Hindringsdata lagres så lenge de anses relevante, eller
+            til de slettes som del av administrativ vedlikehold. Du kan be om innsyn, korrigering eller sletting av
+            dine personopplysninger, innenfor rammene av gjeldende regelverk og systemets tekniske begrensninger.
+        </p>
+
+        <h3 class="text-sm font-semibold text-slate-100 mt-2">Sikkerhet og cookies</h3>
+        <p class="text-sm text-slate-200">
+            Løsningen bruker kryptert kommunikasjon (HTTPS), sikker håndtering av passord og tilgangsstyring basert på
+            roller. Cookies brukes hovedsakelig for innlogging og sesjonshåndtering. Det brukes ikke cookies til
+            markedsføring eller tredjeparts sporing.
+        </p>
+    </section>
+</div>
