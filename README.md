@@ -26,17 +26,22 @@ Applikasjonen følger MVC-mønsteret:
 - [Docker](https://www.docker.com/) installert
 - (Valgfritt) [.NET 6/7 SDK](https://dotnet.microsoft.com/en-us/download)
 
+  
+DATABASE
 docker exec -it nrl-oppgave-db mariadb -uroot -prootpass obstaclesdb
 
-### SQL for obstaclesdb
 CREATE TABLE IF NOT EXISTS obstacles (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     ObstacleName VARCHAR(100) NOT NULL,
     ObstacleHeight DOUBLE NOT NULL CHECK (ObstacleHeight >= 0),
-    ObstacleDescription VARCHAR(2000) NOT NULL,
+    ObstacleDescription TEXT DEFAULT NULL,
     GeometryGeoJson LONGTEXT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    Latitude DOUBLE NULL,
+    Longitude DOUBLE NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status VARCHAR(20) NOT NULL DEFAULT 'Pending'
 );
+
 
 Admin bruker: admin@example.com 
 Passord: AdminPassw0rd!
