@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Remove="Areas\Identity\Pages\Account\Manage\TwoFactorAuthentication.cshtml.cs" />
+    <Compile Remove="Views\Home\PilotMode.cshtml.cs" />
   </ItemGroup>
 
   <ItemGroup>

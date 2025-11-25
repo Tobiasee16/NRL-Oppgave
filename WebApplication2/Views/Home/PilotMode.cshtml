@@ -1,0 +1,254 @@
+﻿@{
+    Layout = null; // ingen navbar, ingen standardlayout
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Pilot Mode – Aviation Obstacles</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: #020617;
+            overflow: hidden;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Exit-knapp */
+        #exitPilot {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1001;
+            padding: 8px 18px; 
+            border-radius: 9999px;
+            border: 1px solid #334155;
+            background: rgba(15,23,42,0.96);
+            color: #e5e7eb;
+            font-size: 0.9rem; 
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* 5 km-chip */
+        #obstacleChip {
+            position: fixed;
+            top: 16px; 
+            left: 50px;
+            z-index: 1001;
+            padding: 8px 18px; 
+            border-radius: 9999px;
+            border: 1px solid #334155;
+            background: rgba(15,23,42,0.96);
+            color: #e5e7eb;
+            font-size: 0.9rem; 
+            white-space: nowrap;
+            pointer-events: none; 
+        }
+    </style>
+
+</head>
+<body>
+
+    <button id="exitPilot" type="button" onclick="window.location.href='@Url.Action("ObstacleHeatmap", "Home")'">
+        Exit Pilot Mode
+    </button>
+
+    <div id="obstacleChip">Loading…</div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+    <script>
+        // --- Fullskjerm-kart for pilot ---
+
+        const map = L.map('map', {
+            zoomControl: true,
+            worldCopyJump: false,
+            maxBoundsViscosity: 1.0,
+            maxBounds: [
+                [-85, -180],
+                [85, 180]
+            ]
+        }).setView([58.2, 8.0], 11);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            minZoom: 4,
+            noWrap: true
+        }).addTo(map);
+
+        const dataUrl = '@Url.Action("NrlPunktData", "Home")';
+
+        let obstacleFeatures = [];
+        let lastUserLatLng = null;
+        let hasObstacleData = false;
+
+        const chip = document.getElementById('obstacleChip');
+
+        // --- Hjelpefunksjoner ---
+
+        function distanceKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const toRad = deg => deg * Math.PI / 180;
+
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function updateChip() {
+            if (!hasObstacleData && !lastUserLatLng) {
+                chip.textContent = "Loading position and obstacles…";
+                return;
+            }
+
+            if (!hasObstacleData) {
+                chip.textContent = "Loading obstacle data…";
+                return;
+            }
+
+            if (!lastUserLatLng) {
+                chip.textContent = "Waiting for position…";
+                return;
+            }
+
+            const radiusKm = 5;
+            let count = 0;
+
+            for (const f of obstacleFeatures) {
+                if (!f.geometry || !f.geometry.coordinates || f.geometry.coordinates.length < 2)
+                    continue;
+
+                const lon = f.geometry.coordinates[0];
+                const lat = f.geometry.coordinates[1];
+                const d = distanceKm(lastUserLatLng.lat, lastUserLatLng.lng, lat, lon);
+                if (d <= radiusKm) count++;
+            }
+
+            chip.textContent = `Obstacles within ${radiusKm} km: ${count}`;
+        }
+
+        // --- Hent hinderdata + heatmap ---
+
+        fetch(dataUrl)
+            .then(r => r.json())
+            .then(data => {
+                obstacleFeatures = data.features || [];
+                hasObstacleData = true;
+
+                const heatPoints = obstacleFeatures
+                    .map(f => {
+                        if (!f.geometry || !f.geometry.coordinates || f.geometry.coordinates.length < 2)
+                            return null;
+
+                        const lon = f.geometry.coordinates[0];
+                        const lat = f.geometry.coordinates[1];
+                        const props = f.properties || {};
+                        const h = props.vertikalAvstand || 0;
+                        const weight = Math.min(1, (h || 50) / 300.0);
+
+                        return [lat, lon, weight];
+                    })
+                    .filter(p => p !== null);
+
+                L.heatLayer(heatPoints, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 12
+                }).addTo(map);
+
+                updateChip();
+            })
+            .catch(err => {
+                console.error('Error loading obstacle data for pilot mode:', err);
+                chip.textContent = "Could not load obstacle data.";
+            });
+
+        // --- GPS-dot i pilot mode ---
+
+        const userIcon = L.divIcon({
+            html: `
+                <div style="
+                    width:18px;
+                    height:18px;
+                    background:#007AFF;
+                    border-radius:50%;
+                    border:2px solid white;
+                    box-shadow:0 0 0 5px rgba(0,122,255,0.35);
+                "></div>
+            `,
+            className: "",
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+        });
+
+        let userMarker = null;
+        let accuracyCircle = null;
+        let hasCenteredOnUser = false;
+
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(
+                function (pos) {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const acc = pos.coords.accuracy;
+
+                    const newLatLng = L.latLng(lat, lon);
+                    lastUserLatLng = newLatLng;
+
+                    if (!userMarker) {
+                        userMarker = L.marker(newLatLng, {
+                            icon: userIcon,
+                            title: "Your position"
+                        }).addTo(map);
+
+                        accuracyCircle = L.circle(newLatLng, {
+                            radius: acc
+                        }).addTo(map);
+                    } else {
+                        userMarker.setLatLng(newLatLng);
+                        accuracyCircle.setLatLng(newLatLng);
+                        accuracyCircle.setRadius(acc);
+                    }
+
+                    if (!hasCenteredOnUser) {
+                        map.setView(newLatLng, 11);
+                        hasCenteredOnUser = true;
+                    }
+
+                    updateChip();
+                },
+                function (err) {
+                    console.warn("Geolocation error in pilot mode:", err);
+                    chip.textContent = "Could not get position (" + err.message + ").";
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000
+                }
+            );
+        } else {
+            chip.textContent = "Geolocation is not supported in this browser.";
+        }
+    </script>
+</body>
+</html>

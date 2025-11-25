@@ -66,6 +66,12 @@ namespace WebApplication2.Controllers
             return View();
         }
 
+        // PilotMode side
+        public IActionResult PilotMode()
+        {
+            return View();
+        }
+
         // Returnerer GeoJSON-fila som API-endepunkt
         [HttpGet]
         public IActionResult NrlPunktData()

@@ -6,31 +6,48 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 
 <div class="container mt-4">
-    <!-- MARKERT OVERSKRIFT -->
-    <div class="mb-2">
-        <div style="
-            display:inline-flex;
-            align-items:center;
-            gap:0.5rem;
-            padding:0.35rem 0.9rem;
-            border-radius:9999px;
-            background:rgba(59,130,246,0.14);
-            border:1px solid rgba(59,130,246,0.55);
-        ">
-            <span style="font-weight:600; color:#bfdbfe;">Aviation obstacles</span>
-            <span style="font-size:0.85rem; color:#9ca3af;">Heatmap</span>
-        </div>
+    <!-- Tittel + knapp til Pilot Mode -->
+    <div class="mb-2 d-flex align-items-center" id="heatmapHeader" style="gap: 1rem;">
+    <div style="
+        display:inline-flex;
+        align-items:center;
+        gap:0.5rem;
+        padding:0.35rem 0.9rem;
+        border-radius:9999px;
+        background:rgba(59,130,246,0.14);
+        border:1px solid rgba(59,130,246,0.55);
+    ">
+        <span style="font-weight:600; color:#bfdbfe;">Aviation obstacles</span>
+        <span style="font-size:0.85rem; color:#9ca3af;">Heatmap</span>
     </div>
 
-    <!-- BESKRIVELSE -->
+    <a asp-controller="Home"
+       asp-action="PilotMode"
+       class="btn btn-sm"
+       style="
+            padding:0.35rem 0.9rem;
+            border-radius:9999px;
+            border:1px solid #22c55e;
+            background:rgba(21,128,61,0.15);
+            color:#bbf7d0;
+            font-size:0.8rem;
+       ">
+        Enter Pilot Mode
+    </a>
+</div>
+
+
+    <!-- Beskrivelse -->
     <p style="max-width:60rem; font-size:0.9rem; color:#e5e7eb; margin-top:0.5rem;">
-        The map displays a heatmap based on point data from Nasjonalt Register over Luftfartshindringer.
+        The map displays a heatmap based on point data from the National Register of Aviation Obstacles.
         Your position (if you grant access) is shown as a marker, and the number of obstacles within a
         specified area around you is calculated continuously.
     </p>
 
-    <!-- KART + LITEN STATUS-CHIP -->
-    <div class="mt-4" style="position:relative;">
+    <!-- Kart + overlay -->
+    <div class="mt-4" id="heatmapWrapper" style="position:relative;">
+
+        <!-- 5 km-chip -->
         <div id="obstacleSummary"
              style="
                 position:absolute;
@@ -51,39 +68,44 @@
         <div id="heatmap"
              style="height:70vh; width:100%; border-radius:8px; border:1px solid #334155; overflow:hidden;">
         </div>
-
-        <p style="max-width:60rem; font-size:0.9rem; color:#e5e7eb; margin-top:0.5rem;">
-            This view is an additional awareness tool and must not be used as primary navigation or obstacle clearance reference.
-        </p>
     </div>
 </div>
-
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
     <script>
-        // --- Kart og heatmap ---
+        // --- Kartoppsett (normalvisning) ---
 
-        const map = L.map('heatmap').setView([64.5, 11.0], 5);
+        const map = L.map('heatmap', {
+            zoomControl: true,
+            worldCopyJump: false,
+            maxBoundsViscosity: 1.0,
+            maxBounds: [
+                [-85, -180],
+                [85, 180]
+            ]
+        }).setView([58.2, 8.0], 12); // omtrent Kristiansand
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-            attribution: '&copy; OpenStreetMap'
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            minZoom: 4,
+            maxZoom: 19,
+            noWrap: true,
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
+        let heatLayer = null;
         const dataUrl = '@Url.Action("NrlPunktData", "Home")';
 
-        let obstacleFeatures = [];     // alle hindere
-        let lastUserLatLng = null;     // siste kjente posisjon
-        let hasObstacleData = false;   // om hinderdata er lastet
+        let obstacleFeatures = [];
+        let lastUserLatLng = null;
+        let hasObstacleData = false;
 
-        // --- Hjelpefunksjoner for avstand og statusboks ---
+        // --- Hjelpefunksjoner ---
 
-        // Haversine-avstand i km
         function distanceKm(lat1, lon1, lat2, lon2) {
-            const R = 6371; // km
+            const R = 6371;
             const toRad = deg => deg * Math.PI / 180;
 
             const dLat = toRad(lat2 - lat1);
@@ -93,17 +115,15 @@
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
             return R * c;
         }
 
-                function setSummary(text) {
+        function setSummary(text) {
             const box = document.getElementById('obstacleSummary');
             if (!box) return;
             box.textContent = text;
         }
 
-        // Kalles hver gang enten posisjon eller data er oppdatert
         function recomputeSummary() {
             if (!hasObstacleData && !lastUserLatLng) {
                 setSummary("Loading position and obstacles…");
@@ -129,23 +149,19 @@
 
                 const lon = f.geometry.coordinates[0];
                 const lat = f.geometry.coordinates[1];
-
                 const d = distanceKm(lastUserLatLng.lat, lastUserLatLng.lng, lat, lon);
-                if (d <= radiusKm) {
-                    count++;
-                }
+                if (d <= radiusKm) count++;
             }
 
             setSummary(`Obstacles within ${radiusKm} km: ${count}`);
         }
 
-
-        // --- Hent hinderdata og lag heatmap ---
+        // --- Hent hinderdata + heatmap ---
 
         fetch(dataUrl)
             .then(r => {
                 if (!r.ok) {
-                    console.error('HTTP-feil ved henting av hinder-data:', r.status, r.statusText);
+                    console.error('HTTP error loading obstacle data:', r.status, r.statusText);
                     throw new Error('HTTP ' + r.status);
                 }
                 return r.json();
@@ -163,15 +179,13 @@
                         const lat = f.geometry.coordinates[1];
                         const props = f.properties || {};
                         const h = props.vertikalAvstand || 0;
-
-                        // høyere hinder = litt “varmere”, kan justeres
                         const weight = Math.min(1, (h || 50) / 300.0);
 
                         return [lat, lon, weight];
                     })
                     .filter(p => p !== null);
 
-                L.heatLayer(heatPoints, {
+                heatLayer = L.heatLayer(heatPoints, {
                     radius: 25,
                     blur: 15,
                     maxZoom: 12
@@ -180,45 +194,28 @@
                 recomputeSummary();
             })
             .catch(err => {
-                console.error('Detaljert feil ved lasting av GeoJSON:', err);
-                setSummary("Kunne ikke laste hinderdata.");
-                alert('Kunne ikke laste hinder-data.');
+                console.error('Error loading GeoJSON:', err);
+                setSummary("Could not load obstacle data.");
+                alert('Could not load obstacle data.');
             });
 
-        // --- Moderne markør: "fly"-ikon som kan roteres ---
+        // --- GPS-dot (iOS/Android-stil) ---
 
-               const userIcon = L.divIcon({
+        const userIcon = L.divIcon({
             html: `
                 <div style="
                     width:18px;
                     height:18px;
-                    background:#2196F3;
+                    background:#007AFF;
                     border-radius:50%;
-                    box-shadow:0 0 0 4px rgba(33,150,243,0.35);
+                    border:2px solid white;
+                    box-shadow:0 0 0 5px rgba(0,122,255,0.35);
                 "></div>
             `,
             className: "",
             iconSize: [18, 18],
             iconAnchor: [9, 9]
         });
-
-
-        function updateHeadingRotation(heading) {
-            // heading: 0 = nord, 90 = øst, osv.
-            if (heading == null || isNaN(heading)) return;
-            if (!userMarker) return;
-
-            const el = userMarker.getElement();
-            if (!el) return;
-
-            const svg = el.querySelector('.user-heading-svg');
-            if (!svg) return;
-
-            svg.style.transition = 'transform 0.2s linear';
-            svg.style.transform = `rotate(${heading}deg)`;
-        }
-
-        // --- Live posisjon (pilot) med smooth bevegelse ---
 
         let userMarker = null;
         let accuracyCircle = null;
@@ -245,7 +242,6 @@
 
                 const lat = fromLatLng.lat + (toLatLng.lat - fromLatLng.lat) * t;
                 const lng = fromLatLng.lng + (toLatLng.lng - fromLatLng.lng) * t;
-
                 userMarker.setLatLng([lat, lng]);
 
                 if (t < 1) {
@@ -263,27 +259,23 @@
                 function (pos) {
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
-                    const acc = pos.coords.accuracy; // i meter
-                    const heading = pos.coords.heading; // kan være null hvis lite bevegelse
+                    const acc = pos.coords.accuracy;
 
                     const newLatLng = L.latLng(lat, lon);
                     const prevLatLng = lastUserLatLng;
                     lastUserLatLng = newLatLng;
 
                     if (!userMarker) {
-                        // Første gang: lag markør og sirkel
-                               userMarker = L.marker(newLatLng, {
-                                   icon: userIcon
-                               }).addTo(map);
+                        userMarker = L.marker(newLatLng, {
+                            icon: userIcon,
+                            title: "Your position"
+                        }).addTo(map);
 
                         accuracyCircle = L.circle(newLatLng, {
                             radius: acc
                         }).addTo(map);
                     } else {
-                        // Smooth bevegelse av markør
                         animateMarkerMove(prevLatLng, newLatLng, 500);
-
-                        // Sirkel kan hoppe direkte – det er OK
                         accuracyCircle.setLatLng(newLatLng);
                         accuracyCircle.setRadius(acc);
                     }
@@ -293,16 +285,11 @@
                         hasCenteredOnUser = true;
                     }
 
-                    // Oppdater heading/rotasjon hvis vi har heading
-                    if (heading !== null && !isNaN(heading)) {
-                        updateHeadingRotation(heading);
-                    }
-
                     recomputeSummary();
                 },
                 function (err) {
-                    console.warn("Geolocation-feil:", err);
-                    setSummary("Posisjon kunne ikke hentes (" + err.message + ").");
+                    console.warn("Geolocation error:", err);
+                    setSummary("Could not get position (" + err.message + ").");
                 },
                 {
                     enableHighAccuracy: true,
@@ -311,10 +298,8 @@
                 }
             );
         } else {
-            console.warn("Geolocation støttes ikke i denne nettleseren.");
-            setSummary("Geolokasjon støttes ikke i denne nettleseren.");
+            console.warn("Geolocation not supported.");
+            setSummary("Geolocation is not supported in this browser.");
         }
     </script>
 }
-
-
