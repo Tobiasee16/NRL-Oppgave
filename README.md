@@ -1,33 +1,96 @@
-Dokumentasjon
+# NRL-Oppgave – Aviation Obstacle Reporting & Heatmap System
 
-# ASP.NET Core MVC med Docker
+A complete ASP.NET Core MVC application for reporting, managing, and visualizing aviation obstacles, based on official datasets from **Nasjonalt register over luftfartshindre (NRL)**.
 
-## Prosjektbeskrivelse
-Dette prosjektet er en ASP.NET Core MVC-applikasjon. 
-Applikasjonen demonstrerer:
-- Controller, ViewModel og View
-- Responsive nettsider med dynamisk innhold
-- Håndtering av GET og POST forespørsler
-- Skjema hvor brukerdata sendes inn og vises på en resultatside
-- Kart hvor bruker kan velge posisjon, som vises på en resultatside
-- Kjøring i Docker-container
+This system was developed as part of a coursework project and includes:
 
+- Obstacle reporting by authenticated users  
+- Administrative approval workflow  
+- A GIS-based heatmap for pilots with live GPS tracking  
+- Role-based access control  
+- Dockerized MariaDB database  
+- Conversion workflow from GML → GeoJSON (QGIS)
 
-## Systemarkitektur
-Applikasjonen følger MVC-mønsteret:
+---
 
-1. **Controller** håndterer forespørsler fra bruker.
-2. **ViewModel** bærer data mellom Controller og View.
-3. **View** viser dataene for brukeren i et responsivt grensesnitt.
-4. **Docker** brukes til å pakke og kjøre applikasjonen.
+## ✨ Core Features
 
+### 📝 Obstacle Reporting
+Users can submit reports of aviation obstacles via a structured form.  
+Features include:
 
-### Krav
-- [Docker](https://www.docker.com/) installert
-- (Valgfritt) [.NET 6/7 SDK](https://dotnet.microsoft.com/en-us/download)
+- Registration form for obstacle data  
+- Overview of submitted data before saving  
+- Storage using EF Core and MariaDB  
+- Role: **Registerfører**
 
-  
-DATABASE
+### 🛠 Admin Panel
+Admins can:
+
+- View all obstacle submissions  
+- Approve or reject reports  
+- Manage data quality  
+- See the full database overview  
+- Role: **Admin**
+
+### ✈️ Pilot View – Real-time Heatmap
+The pilot-facing section includes:
+
+- Heatmap based on national NRL dataset  
+- Automatic weighting based on obstacle height  
+- Live GPS tracking using browser geolocation  
+- iOS/Android-style moving position marker  
+- Smooth motion animation  
+- Continuous calculation of obstacles within 5 km radius  
+- Minimalist UI suitable for in-flight use  
+- Role: **Pilot**
+
+---
+
+## 🗺 GIS & Dataset Workflow
+
+The heatmap uses real GIS data.
+
+### Data sources:
+- Kartverket / **NRL aviation obstacle dataset** (GML format)
+
+### Conversion steps:
+1. Download NRL dataset from Kartverket  
+2. Open GML in **QGIS**  
+3. Convert to **WGS84 / GeoJSON**  
+4. Export as `nrl_punkt.geojson`  
+5. Place the file in: wwwroot/data/nrl_punkt.geojson
+
+### Application flow:
+- The backend exposes the dataset via `/Home/NrlPunktData`
+- The frontend loads it dynamically into Leaflet
+- Heatmap is generated with **Leaflet.heat**
+
+---
+
+## 🧱 Technologies Used
+
+### Backend
+- ASP.NET Core MVC (C#)
+- EF Core (Pomelo provider)
+- ASP.NET Identity (Roles: Admin, Pilot, Registerfører)
+- Dependency Injection
+
+### Frontend
+- Leaflet.js  
+- Leaflet.heat  
+- Tailwind CSS utilities  
+- Custom JavaScript for:
+  - Geolocation
+  - Smooth position animation
+  - Heading-based rotation (optional)
+  - Proximity calculation (Haversine)
+
+### Database
+- MariaDB (Dockerized)
+- EF Core migrations
+- Automatic role seeding
+
 docker exec -it nrl-oppgave-db mariadb -uroot -prootpass obstaclesdb
 
 CREATE TABLE IF NOT EXISTS obstacles (
@@ -42,9 +105,91 @@ CREATE TABLE IF NOT EXISTS obstacles (
     Status VARCHAR(20) NOT NULL DEFAULT 'Pending'
 );
 
+### DevOps / Infrastructure
+- Docker & Docker Compose
+- Multi-container setup for:
+  - Web application
+  - MariaDB
+  - phpMyAdmin (optional)
 
-Admin bruker: admin@example.com 
-Passord: AdminPassw0rd!
+---
+
+## 🐳 Docker Setup
+
+The project includes `docker-compose.yml`.
+
+Start everything: docker-compose up --build
+
+Services that start:
+
+| Service | Description |
+|---------|-------------|
+| web | ASP.NET Core MVC app |
+| db  | MariaDB with mounted volume |
+| phpmyadmin | GUI for DB management (if enabled) |
+
+Default access: http://localhost:8080
+
+---
+
+## 🔐 Authentication & Roles
+
+The system seeds these roles on startup:
+
+- **Admin** – Full access, manage all submissions
+  Admin user: admin@example.com 
+  Password: AdminPassw0rd!
+- **Registerfører** – Can submit new obstacle reports  
+- **Pilot** – Read-only heatmap access  
+
+Identity uses:
+
+- Email + password login  
+- Adjustable password policy  
+- Configurable via Program.cs  
+
+---
+
+## 🚀 Running Locally (without Docker)
+
+### 1. Restore dependencies
+
+### 2. Apply migrations
+
+### 3. Run
+dotnet run
+
+Default URL: https://localhost:5001
+
+---
+
+## 🔮 Future Enhancements
+
+Planned or suggested improvements:
+
+- Toggle between heatmap / point map / filtered views  
+- Filter by height (over 50 m / 100 m / 150 m)  
+- Add “Threat Level” indicator (green/yellow/red)  
+- Add planning mode vs. in-flight mode  
+- Support for route visualization  
+- UX improvements for mobile usage  
+- Caching of GeoJSON for faster load  
+
+---
+
+## 📄 License
+
+Based on publicly available data from Kartverket (NRL).  
+This project is for academic and educational purposes.
+
+---
+
+## 👨‍✈️ Author
+
+Developed by **Tobias**, UiA student, 2025.  
+Includes GIS processing, web development, identity management, and data visualization.
+  
+
 
 
 
