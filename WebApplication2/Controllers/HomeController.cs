@@ -2,24 +2,28 @@
 using System.Diagnostics;
 using WebApplication2.Models;
 using MySqlConnector;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration; // viktig
 
-// Viser status for database-tilkobling og håndterer skjema for registrering av hinder
 namespace WebApplication2.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
-        //public HomeController(ILogger<HomeController> logger)
-        //{
-        //   _logger = logger;
-        //}
-
         private readonly string _connectionString;
+        private readonly IWebHostEnvironment _env;
 
-        public HomeController(IConfiguration config)
+        public HomeController(
+            ILogger<HomeController> logger,
+            IConfiguration config,
+            IWebHostEnvironment env)
         {
-            _connectionString = config.GetConnectionString("DefaultConnection")!;
+            _logger = logger;
+            _env = env;
+
+            _connectionString = config.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         }
 
         public async Task<IActionResult> Index()
@@ -36,19 +40,15 @@ namespace WebApplication2.Controllers
                 status = "❌ Failed to connect to MariaDB: " + ex.Message;
             }
 
-            return View(model: status); // Sender status-strengen som model
+            return View(model: status);
         }
 
-
-
-        // blir kalt etter at vi trykker på "Register Obstacle" lenken i Index Viewet
         [HttpGet]
         public ActionResult DataForm()
         {
             return View();
         }
 
-        // blir kalt etter at vi trykker på "Submit Data" knapp i DataForm viewet
         [HttpPost]
         public ActionResult DataForm(ObstacleData obstacledata)
         {
@@ -60,9 +60,23 @@ namespace WebApplication2.Controllers
             return View();
         }
 
+        // Side med heatmap
+        public IActionResult ObstacleHeatmap()
+        {
+            return View();
+        }
 
+        // Returnerer GeoJSON-fila som API-endepunkt
+        [HttpGet]
+        public IActionResult NrlPunktData()
+        {
+            var path = Path.Combine(_env.WebRootPath, "data", "nrl_punkt.geojson");
+
+            if (!System.IO.File.Exists(path))
+                return NotFound("GeoJSON-fil ikke funnet.");
+
+            var json = System.IO.File.ReadAllText(path);
+            return Content(json, "application/json");
+        }
     }
-
 }
-  
-

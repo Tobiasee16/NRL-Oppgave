@@ -39,6 +39,16 @@
                 <span class="text-sm opacity-80 mt-2">Approve or reject reports</span>
             </a>
 
+            <!-- View Heatmap -->
+            <a asp-controller="Home" asp-action="ObstacleHeatmap"
+               class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
+              bg-blue-600 hover:bg-blue-700 text-white text-center p-8 shadow-xl
+              transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">View Heatmap</span>
+                <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
+            </a>
+
+
         </div>
     }
 
@@ -63,6 +73,15 @@
                           transition active:scale-[0.98]">
                 <span class="text-2xl font-semibold">Map</span>
                 <span class="text-sm opacity-80 mt-2">View all obstacle submissions in map</span>
+            </a>
+
+            <!-- View Heatmap -->
+            <a asp-controller="Home" asp-action="ObstacleHeatmap"
+               class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
+              bg-blue-600 hover:bg-blue-700 text-white text-center p-8 shadow-xl
+              transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">View Heatmap</span>
+                <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
             </a>
 
 
