@@ -3,7 +3,6 @@
     ViewData["Title"] = "Home Page";
 }
 
-
 <section class="text-center mt-10 px-4">
     <h1 class="text-3xl font-semibold text-slate-100 tracking-tight">Welcome</h1>
 
@@ -11,7 +10,6 @@
     @if (User.IsInRole("Admin"))
     {
         <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-
             <!-- Report Obstacle -->
             <a asp-controller="Obstacle" asp-action="DataForm"
                class="flex flex-col items-center justify-center rounded-2xl
@@ -47,17 +45,14 @@
                 <span class="text-2xl font-semibold">View Heatmap</span>
                 <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
             </a>
-
-
         </div>
     }
-
-    @* --------------------- VANLIG BRUKER DASHBOARD --------------------- *@
+    @* --------------------- VANLIG BRUKER DASHBOARD (Pilot) --------------------- *@
     else if (User.Identity?.IsAuthenticated ?? false)
     {
         <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- Report Obstacle (vanlig bruker) -->
+            <!-- Report Obstacle (vanlig bruker/pilot) -->
             <a asp-controller="Obstacle" asp-action="DataForm"
                class="flex flex-col items-center justify-center rounded-2xl
                           bg-sky-600 hover:bg-sky-700 text-white text-center p-8 shadow-xl
@@ -66,7 +61,7 @@
                 <span class="text-sm opacity-80 mt-2">Submit a new report</span>
             </a>
 
-            <!-- Reports (vanlig bruker) -->
+            <!-- Reports (vanlig bruker/pilot) -->
            <a asp-controller="Admin" asp-action="MapAll"
                class="flex flex-col items-center justify-center rounded-2xl
                           bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
@@ -83,11 +78,8 @@
                 <span class="text-2xl font-semibold">View Heatmap</span>
                 <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
             </a>
-
-
         </div>
     }
-
     @* --------------------- IKKE INNLOGGET --------------------- *@
     else
     {
@@ -126,6 +118,4 @@
             <span>@Model</span>
         </div>
     }
-
-
 </section>

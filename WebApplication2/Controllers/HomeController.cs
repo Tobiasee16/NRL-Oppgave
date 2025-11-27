@@ -4,7 +4,7 @@ using WebApplication2.Models;
 using MySqlConnector;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration; // viktig
+using Microsoft.Extensions.Configuration;
 
 namespace WebApplication2.Controllers
 {
@@ -28,6 +28,22 @@ namespace WebApplication2.Controllers
 
         public async Task<IActionResult> Index()
         {
+            // 1) Rolle-basert redirect
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Registerforer"))
+                {
+                    return RedirectToAction("Index", "Registerforer");
+                }
+
+                // Valgfritt: egen startside for admin
+                // if (User.IsInRole("Admin"))
+                // {
+                //     return RedirectToAction("Index", "Admin");
+                // }
+            }
+
+            // 2) Vanlig Home-side (pilot / ikke innlogget)
             string status;
             try
             {
@@ -60,19 +76,16 @@ namespace WebApplication2.Controllers
             return View();
         }
 
-        // Side med heatmap
         public IActionResult ObstacleHeatmap()
         {
             return View();
         }
 
-        // PilotMode side
         public IActionResult PilotMode()
         {
             return View();
         }
 
-        // Returnerer GeoJSON-fila som API-endepunkt
         [HttpGet]
         public IActionResult NrlPunktData()
         {

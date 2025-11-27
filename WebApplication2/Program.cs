@@ -97,7 +97,7 @@ app.Run();
 
 
 // =========================================================
-//  Seeding av roller + Admin + Registerfører
+//  Seeding av roller + Admin + Registerfører + Pilot
 // =========================================================
 
 static async Task SeedIdentityDataAsync(
@@ -113,10 +113,9 @@ static async Task SeedIdentityDataAsync(
             await roleMgr.CreateAsync(new IdentityRole(role));
     }
 
-
-    // -------------------------------------------------------
+    // ------------------------
     // 1) Admin-bruker
-    // -------------------------------------------------------
+    // ------------------------
     var adminEmail = "admin@example.com";
     var adminUser = await userMgr.FindByEmailAsync(adminEmail);
 
@@ -129,16 +128,18 @@ static async Task SeedIdentityDataAsync(
             EmailConfirmed = true
         };
 
-        var createAdmin = await userMgr.CreateAsync(adminUser, "AdminPassw0rd!");
-
-        if (createAdmin.Succeeded)
-            await userMgr.AddToRoleAsync(adminUser, "Admin");
+        await userMgr.CreateAsync(adminUser, "AdminPassw0rd!");
     }
 
+    // Sørg for at admin faktisk har rollen
+    if (!await userMgr.IsInRoleAsync(adminUser, "Admin"))
+    {
+        await userMgr.AddToRoleAsync(adminUser, "Admin");
+    }
 
-    // -------------------------------------------------------
+    // ------------------------
     // 2) Registerfører-bruker (dummy)
-    // -------------------------------------------------------
+    // ------------------------
     var regEmail = "registerforer@example.com";
     var regUser = await userMgr.FindByEmailAsync(regEmail);
 
@@ -151,10 +152,12 @@ static async Task SeedIdentityDataAsync(
             EmailConfirmed = true
         };
 
-        var createReg = await userMgr.CreateAsync(regUser, "RegisterPassw0rd!");
-
-        if (createReg.Succeeded)
-            await userMgr.AddToRoleAsync(regUser, "Registerforer");
+        await userMgr.CreateAsync(regUser, "RegisterPassw0rd!");
     }
-}
-     
+
+    // 🔴 VIKTIG: alltid sjekk/legg til rolle, også hvis brukeren fantes fra før
+    if (!await userMgr.IsInRoleAsync(regUser, "Registerforer"))
+    {
+        await userMgr.AddToRoleAsync(regUser, "Registerforer");
+    }
+ } 
