@@ -41,7 +41,7 @@ builder.Services
 
         options.User.RequireUniqueEmail = true;
     })
-    .AddRoles<IdentityRole>()                             // vi bruker roller (Admin osv.)
+    .AddRoles<IdentityRole>()                             // vi bruker roller (Admin, Registerforer, Pilot)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // ------------------------
@@ -58,7 +58,7 @@ builder.Services.AddScoped<IObstacleRepository, ObstacleRepository>();
 var app = builder.Build();
 
 // ------------------------
-//  Migrer DB + seed roller/admin
+//  Migrer DB + seed roller / admin / registerfører
 // ------------------------
 using (var scope = app.Services.CreateScope())
 {
@@ -67,7 +67,7 @@ using (var scope = app.Services.CreateScope())
 
     var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    await SeedRolesAndAdminAsync(roleMgr, userMgr);
+    await SeedIdentityDataAsync(roleMgr, userMgr);
 }
 
 // ------------------------
@@ -95,25 +95,28 @@ app.MapRazorPages();       // Identity UI
 
 app.Run();
 
-// ------------------------
-//  Seeding av roller + admin
-// ------------------------
-static async Task SeedRolesAndAdminAsync(
+
+// =========================================================
+//  Seeding av roller + Admin + Registerfører
+// =========================================================
+
+static async Task SeedIdentityDataAsync(
     RoleManager<IdentityRole> roleMgr,
     UserManager<IdentityUser> userMgr)
 {
-    // Rollene du vil ha i systemet
-    string[] roles = { "Admin", "Registerfoerer", "Pilot" };
+    // Roller (systemroller)
+    string[] roles = { "Admin", "Registerforer", "Pilot" };
 
     foreach (var role in roles)
     {
         if (!await roleMgr.RoleExistsAsync(role))
-        {
             await roleMgr.CreateAsync(new IdentityRole(role));
-        }
     }
 
-    // Admin-bruker
+
+    // -------------------------------------------------------
+    // 1) Admin-bruker
+    // -------------------------------------------------------
     var adminEmail = "admin@example.com";
     var adminUser = await userMgr.FindByEmailAsync(adminEmail);
 
@@ -126,13 +129,32 @@ static async Task SeedRolesAndAdminAsync(
             EmailConfirmed = true
         };
 
-        var result = await userMgr.CreateAsync(adminUser, "AdminPassw0rd!");
+        var createAdmin = await userMgr.CreateAsync(adminUser, "AdminPassw0rd!");
 
-        if (result.Succeeded)
-        {
+        if (createAdmin.Succeeded)
             await userMgr.AddToRoleAsync(adminUser, "Admin");
-        }
-        // Hvis du vil, kan du logge/feilhåndtere hvis det ikke lykkes
+    }
+
+
+    // -------------------------------------------------------
+    // 2) Registerfører-bruker (dummy)
+    // -------------------------------------------------------
+    var regEmail = "registerforer@example.com";
+    var regUser = await userMgr.FindByEmailAsync(regEmail);
+
+    if (regUser is null)
+    {
+        regUser = new IdentityUser
+        {
+            UserName = regEmail,
+            Email = regEmail,
+            EmailConfirmed = true
+        };
+
+        var createReg = await userMgr.CreateAsync(regUser, "RegisterPassw0rd!");
+
+        if (createReg.Succeeded)
+            await userMgr.AddToRoleAsync(regUser, "Registerforer");
     }
 }
-
+     
