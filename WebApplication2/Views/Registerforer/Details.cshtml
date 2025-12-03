@@ -1,0 +1,113 @@
+@model WebApplication2.Models.ObstacleData
+
+@{
+    ViewData["Title"] = "Detaljer – " + Model.ObstacleName;
+}
+
+<section class="px-4 py-10 max-w-4xl mx-auto text-slate-100">
+
+    <a asp-action="Index" class="text-sm text-slate-400 hover:text-slate-200">
+        ← Tilbake til oversikt
+    </a>
+
+    <header class="mt-3 mb-6">
+        <h1 class="text-3xl font-semibold tracking-tight">
+            @Model.ObstacleName
+        </h1>
+        <p class="mt-2 text-sm text-slate-400">
+            Full visning av innmeldingen før du godkjenner eller avslår.
+        </p>
+    </header>
+
+    <!-- Kort info / metadata -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+            <p class="text-xs uppercase text-slate-400">Id</p>
+            <p class="text-lg font-semibold">@Model.Id</p>
+        </div>
+        <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+            <p class="text-xs uppercase text-slate-400">Status</p>
+            <p class="text-lg font-semibold">@Model.Status</p>
+        </div>
+        <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+            <p class="text-xs uppercase text-slate-400">Høyde (m)</p>
+            <p class="text-lg font-semibold">@Model.ObstacleHeight</p>
+        </div>
+        <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+            <p class="text-xs uppercase text-slate-400">Opprettet</p>
+            <p class="text-lg font-semibold">
+                @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+            </p>
+        </div>
+    </div>
+
+    <!-- Beskrivelse -->
+    <div class="mb-6 rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+        <h2 class="text-lg font-semibold mb-2">Beskrivelse</h2>
+        <p class="text-sm text-slate-200">
+            @(!string.IsNullOrWhiteSpace(Model.ObstacleDescription)
+                ? Model.ObstacleDescription
+                : "Ingen beskrivelse oppgitt.")
+        </p>
+    </div>
+
+    <!-- Kartseksjon -->
+    <div class="mb-6 rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
+        <h2 class="text-lg font-semibold mb-3">Plassering / geometri</h2>
+
+        <div id="obstacle-map" class="w-full h-72 rounded-xl overflow-hidden bg-slate-800">
+            <!-- Kartet blir tegnet her via JS -->
+        </div>
+
+        <p class="mt-2 text-xs text-slate-400">
+            Kartet viser posisjon/geometri fra innmeldingen (GeometryGeoJson).
+        </p>
+    </div>
+
+    <!-- Godkjenn / Avslå / Slett -->
+    <div class="flex flex-wrap gap-3 mt-4">
+        <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
+            <button type="submit"
+                    class="px-4 py-2 rounded-full text-sm font-medium
+                           bg-emerald-600 hover:bg-emerald-700 text-white
+                           transition active:scale-[0.97]">
+                Godkjenn
+            </button>
+        </form>
+
+        <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
+            <button type="submit"
+                    class="px-4 py-2 rounded-full text-sm font-medium
+                           bg-amber-600 hover:bg-amber-700 text-white
+                           transition active:scale-[0.97]">
+                Avslå
+            </button>
+        </form>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
+            <button type="submit"
+                    class="px-4 py-2 rounded-full text-sm font-medium
+                           bg-rose-600 hover:bg-rose-700 text-white
+                           transition active:scale-[0.97]">
+                Slett
+            </button>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Her kan du gjenbruke samme kart-oppsett som i innmeldingsskjemaet,
+        // men i "read-only"-modus.
+
+        const geometryGeoJson = @Html.Raw(Model.GeometryGeoJson ?? "null");
+        const lat = @Model.Latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null";
+        const lng = @Model.Longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null";
+
+        // Eksempel med Leaflet (tilpass til deres faktiske kartkode)
+        // const map = L.map('obstacle-map').setView([lat, lng], 14);
+        // L.tileLayer(...).addTo(map);
+        // osv...
+    </script>
+}

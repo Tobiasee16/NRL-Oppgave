@@ -15,7 +15,7 @@
         </p>
     </header>
 
-    <!-- Kort oversikt / stats (valgfritt, men ser proft ut) -->
+    <!-- Kort oversikt / stats -->
     @{
         var total = Model.Count();
         var pending = Model.Count(o => o.Status == "Pending");
@@ -90,6 +90,14 @@
                         <!-- Handlinger -->
                         <td class="px-4 py-3 align-top">
                             <div class="flex justify-end gap-2">
+
+                                <!-- NY: Se detaljer -->
+                                <a asp-action="Details" asp-route-id="@o.Id"
+                                   class="px-3 py-1.5 rounded-full text-xs font-medium
+                                          bg-slate-700 hover:bg-slate-600 text-slate-50
+                                          transition active:scale-[0.97]">
+                                    Se detaljer
+                                </a>
 
                                 <form asp-action="Approve" asp-route-id="@o.Id" method="post">
                                     <button type="submit"

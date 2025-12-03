@@ -21,6 +21,15 @@ namespace WebApplication2.Controllers
             var obstacles = await _obstacleRepository.ListAsync();
             return View(obstacles);
         }
+        // Detaljside for en spesifikk innmelding
+        public async Task<IActionResult> Details(int id)
+        {
+            var obstacle = await _obstacleRepository.GetByIdAsync(id);
+            if (obstacle == null)
+                return NotFound();
+
+            return View(obstacle);
+        }
 
         // Godkjenn en innmelding
         [HttpPost]
