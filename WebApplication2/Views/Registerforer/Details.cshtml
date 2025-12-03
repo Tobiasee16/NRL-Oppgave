@@ -4,6 +4,11 @@
     ViewData["Title"] = "Detaljer – " + Model.ObstacleName;
 }
 
+@section Head {
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+}
+
 <section class="px-4 py-10 max-w-4xl mx-auto text-slate-100">
 
     <a asp-action="Index" class="text-sm text-slate-400 hover:text-slate-200">
@@ -55,8 +60,9 @@
     <div class="mb-6 rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
         <h2 class="text-lg font-semibold mb-3">Plassering / geometri</h2>
 
-        <div id="obstacle-map" class="w-full h-72 rounded-xl overflow-hidden bg-slate-800">
-            <!-- Kartet blir tegnet her via JS -->
+        <!-- VIKTIG: ny id + tydelig høyde -->
+        <div id="obstacle-map"
+             style="width: 100%; height: 300px; border-radius: 0.75rem; overflow: hidden; background: #020617;">
         </div>
 
         <p class="mt-2 text-xs text-slate-400">
@@ -97,17 +103,58 @@
 </section>
 
 @section Scripts {
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
     <script>
-        // Her kan du gjenbruke samme kart-oppsett som i innmeldingsskjemaet,
-        // men i "read-only"-modus.
+        // Hent GeoJSON rett fra modellen.
+        // Hvis GeometryGeoJson er tom -> null
+        const geometryGeoJson = @Html.Raw(
+            string.IsNullOrWhiteSpace(Model.GeometryGeoJson)
+                ? "null"
+                : Model.GeometryGeoJson
+        );
 
-        const geometryGeoJson = @Html.Raw(Model.GeometryGeoJson ?? "null");
-        const lat = @Model.Latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null";
-        const lng = @Model.Longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "null";
+        // Fallback: bruk lagrede koordinater hvis vi har dem
+        const hasLatLng = @((Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLower());
+        const lat = @((Model.Latitude ?? 63.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        const lng = @((Model.Longitude ?? 10.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
 
-        // Eksempel med Leaflet (tilpass til deres faktiske kartkode)
-        // const map = L.map('obstacle-map').setView([lat, lng], 14);
-        // L.tileLayer(...).addTo(map);
-        // osv...
+        // Init kartet
+        const map = L.map('obstacle-map');
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 1) Hvis vi har GeoJSON fra innmeldingen → tegn det
+        if (geometryGeoJson) {
+            const layerGroup = L.geoJSON(geometryGeoJson).addTo(map);
+
+            try {
+                const bounds = layerGroup.getBounds();
+                if (bounds && bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [20, 20] });
+                } else {
+                    // fallback hvis bounds ikke er gyldig
+                    map.setView([63.4, 10.4], 5);
+                }
+            } catch (e) {
+                console.warn("Klarte ikke å bruke GeoJSON-bounds:", e);
+                map.setView([63.4, 10.4], 5);
+            }
+        }
+        // 2) Hvis ikke GeoJSON, men vi har lagret punkt → vis markør
+        else if (hasLatLng) {
+            map.setView([lat, lng], 14);
+            L.marker([lat, lng]).addTo(map);
+        }
+        // 3) Ingen data → standard Norge-visning
+        else {
+            map.setView([63.4, 10.4], 5);
+        }
+
+        // Liten sikkerhets-invalidate for at kartet fyller boksen
+        setTimeout(() => map.invalidateSize(), 200);
     </script>
 }
