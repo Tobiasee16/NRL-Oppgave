@@ -136,11 +136,13 @@ Default access: http://localhost:8080
 
 The system seeds these roles on startup:
 
-- **Admin** – Full access, manage all submissions
+- **Admin** – Can edit roles of users
   Admin user: admin@example.com 
   Password: AdminPassw0rd!
-- **Registerfører** – Can submit new obstacle reports  
-- **Pilot** – Read-only heatmap access  
+- **Registerfører** – Full report overview and ability to edit them
+  Registerfører user: registerforer@example.com
+  Password: RegisterPassw0rd!
+- **Pilot** – Reports obstacles and heatmap overview
 
 Identity uses:
 
