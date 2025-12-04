@@ -11,7 +11,7 @@
 
 <section class="px-4 py-10 max-w-4xl mx-auto text-slate-100">
 
-    <a asp-action="Index" class="text-sm text-slate-400 hover:text-slate-200">
+    <a asp-controller="Registerforer" asp-action="Index" class="text-sm text-slate-400 hover:text-slate-200">
         ← Tilbake til oversikt
     </a>
 
@@ -20,7 +20,7 @@
             @Model.ObstacleName
         </h1>
         <p class="mt-2 text-sm text-slate-400">
-            Full visning av innmeldingen før du godkjenner eller avslår.
+            Full visning av innmeldingen før du godkjenner, avslår eller sletter.
         </p>
     </header>
 
@@ -44,6 +44,12 @@
                 @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
             </p>
         </div>
+        <div class="rounded-2xl bg-slate-900/70 border border-slate-800 p-4 md:col-span-2">
+            <p class="text-xs uppercase text-slate-400">Innmeldt av</p>
+            <p class="text-lg font-semibold">
+                @(string.IsNullOrEmpty(Model.ReporterEmail) ? "Ukjent" : Model.ReporterEmail)
+            </p>
+        </div>
     </div>
 
     <!-- Beskrivelse -->
@@ -51,8 +57,8 @@
         <h2 class="text-lg font-semibold mb-2">Beskrivelse</h2>
         <p class="text-sm text-slate-200">
             @(!string.IsNullOrWhiteSpace(Model.ObstacleDescription)
-                ? Model.ObstacleDescription
-                : "Ingen beskrivelse oppgitt.")
+                        ? Model.ObstacleDescription
+                        : "Ingen beskrivelse oppgitt.")
         </p>
     </div>
 
@@ -60,7 +66,6 @@
     <div class="mb-6 rounded-2xl bg-slate-900/70 border border-slate-800 p-4">
         <h2 class="text-lg font-semibold mb-3">Plassering / geometri</h2>
 
-        <!-- VIKTIG: ny id + tydelig høyde -->
         <div id="obstacle-map"
              style="width: 100%; height: 300px; border-radius: 0.75rem; overflow: hidden; background: #020617;">
         </div>
@@ -72,7 +77,8 @@
 
     <!-- Godkjenn / Avslå / Slett -->
     <div class="flex flex-wrap gap-3 mt-4">
-        <form asp-action="Approve" asp-route-id="@Model.Id" method="post">
+        <form asp-controller="Registerforer" asp-action="Approve" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
             <button type="submit"
                     class="px-4 py-2 rounded-full text-sm font-medium
                            bg-emerald-600 hover:bg-emerald-700 text-white
@@ -81,7 +87,8 @@
             </button>
         </form>
 
-        <form asp-action="Reject" asp-route-id="@Model.Id" method="post">
+        <form asp-controller="Registerforer" asp-action="Reject" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
             <button type="submit"
                     class="px-4 py-2 rounded-full text-sm font-medium
                            bg-amber-600 hover:bg-amber-700 text-white
@@ -90,8 +97,9 @@
             </button>
         </form>
 
-        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+        <form asp-controller="Registerforer" asp-action="Delete" asp-route-id="@Model.Id" method="post"
               onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
+            @Html.AntiForgeryToken()
             <button type="submit"
                     class="px-4 py-2 rounded-full text-sm font-medium
                            bg-rose-600 hover:bg-rose-700 text-white
@@ -106,20 +114,16 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <script>
-        // Hent GeoJSON rett fra modellen.
-        // Hvis GeometryGeoJson er tom -> null
         const geometryGeoJson = @Html.Raw(
-            string.IsNullOrWhiteSpace(Model.GeometryGeoJson)
-                ? "null"
-                : Model.GeometryGeoJson
-        );
+                    string.IsNullOrWhiteSpace(Model.GeometryGeoJson)
+                            ? "null"
+                            : Model.GeometryGeoJson
+            );
 
-        // Fallback: bruk lagrede koordinater hvis vi har dem
-        const hasLatLng = @((Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLower());
-        const lat = @((Model.Latitude ?? 63.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
-        const lng = @((Model.Longitude ?? 10.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
+    const hasLatLng = @((Model.Latitude.HasValue && Model.Longitude.HasValue).ToString().ToLower());
+    const lat = @((Model.Latitude ?? 63.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
+    const lng = @((Model.Longitude ?? 10.4).ToString(System.Globalization.CultureInfo.InvariantCulture));
 
-        // Init kartet
         const map = L.map('obstacle-map');
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -127,7 +131,6 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1) Hvis vi har GeoJSON fra innmeldingen → tegn det
         if (geometryGeoJson) {
             const layerGroup = L.geoJSON(geometryGeoJson).addTo(map);
 
@@ -136,7 +139,6 @@
                 if (bounds && bounds.isValid()) {
                     map.fitBounds(bounds, { padding: [20, 20] });
                 } else {
-                    // fallback hvis bounds ikke er gyldig
                     map.setView([63.4, 10.4], 5);
                 }
             } catch (e) {
@@ -144,17 +146,14 @@
                 map.setView([63.4, 10.4], 5);
             }
         }
-        // 2) Hvis ikke GeoJSON, men vi har lagret punkt → vis markør
         else if (hasLatLng) {
             map.setView([lat, lng], 14);
             L.marker([lat, lng]).addTo(map);
         }
-        // 3) Ingen data → standard Norge-visning
         else {
             map.setView([63.4, 10.4], 5);
         }
 
-        // Liten sikkerhets-invalidate for at kartet fyller boksen
         setTimeout(() => map.invalidateSize(), 200);
     </script>
 }

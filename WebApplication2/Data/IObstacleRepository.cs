@@ -11,6 +11,6 @@ namespace WebApplication2.Data
         Task<IEnumerable<ObstacleData>> ListAsync();
         Task UpdateStatusAsync(int id, string status);
         Task DeleteAsync(int id);
-
+        Task UpdateAsync(ObstacleData obstacle);
     }
 }

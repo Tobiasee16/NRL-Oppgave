@@ -56,22 +56,31 @@
             </p>
         </div>
 
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-controller="Admin" asp-action="Index"
-               class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
-                      hover:bg-slate-800 hover:border-slate-600 transition">
-                Back to admin panel
-            </a>
-        }
-        else
-        {
-            <a asp-controller="Admin" asp-action="Index"
-               class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
-                      hover:bg-slate-800 hover:border-slate-600 transition">
-                Back to reports
-            </a>
-        }
+       @if (User.IsInRole("Admin"))
+{
+    <a asp-controller="Admin" asp-action="Index"
+       class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
+              hover:bg-slate-800 hover:border-slate-600 transition">
+        Back to admin panel
+    </a>
+}
+else if (User.IsInRole("Registerforer"))
+{
+    <a asp-controller="Registerforer" asp-action="Index"
+       class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
+              hover:bg-slate-800 hover:border-slate-600 transition">
+        Back to reports
+    </a>
+}
+else
+{
+    <a asp-controller="Home" asp-action="Index"
+       class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-100 border border-slate-700
+              hover:bg-slate-800 hover:border-slate-600 transition">
+        Back to home
+    </a>
+}
+
     </div>
 
     <!-- Filterpanel + view toggle -->

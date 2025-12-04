@@ -1,45 +1,181 @@
 @model IEnumerable<WebApplication2.Models.ObstacleData>
-
+@using System.Text.Json
 @{
     ViewData["Title"] = "Innmeldinger – Registerfører";
+    var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
+
+    var total = Model.Count();
+    var pending = Model.Count(o => o.Status == "Pending");
+    var approved = Model.Count(o => o.Status == "Approved");
+    var rejected = Model.Count(o => o.Status == "Rejected");
 }
 
-<section class="px-4 py-10 max-w-6xl mx-auto text-slate-100">
+@section Head {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Tittel + intro -->
-    <header class="mb-6">
-        <h1 class="text-3xl font-semibold tracking-tight">Innmeldinger (Registerfører)</h1>
-        <p class="mt-2 text-sm text-slate-400">
-            Her kan du som <span class="font-semibold text-slate-200">registerfører</span> se, godkjenne, avslå
-            og slette innmeldinger.
-        </p>
-    </header>
+    <style>
+        .mini-map {
+            width: 180px;
+            height: 120px;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
 
-    <!-- Kort oversikt / stats -->
-    @{
-        var total = Model.Count();
-        var pending = Model.Count(o => o.Status == "Pending");
-        var approved = Model.Count(o => o.Status == "Approved");
-        var rejected = Model.Count(o => o.Status == "Rejected");
-    }
+        .map-skel {
+            background: linear-gradient(90deg, #0f172a 25%, #1e293b 37%, #0f172a 63%);
+            background-size: 400% 100%;
+            animation: sh 1.4s ease infinite;
+        }
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
+        @@keyframes sh {
+            0% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0 50%;
+            }
+        }
+    </style>
+}
+
+<div class="max-w-6xl mx-auto px-4 py-10 space-y-8 text-slate-100">
+
+    <!-- Header / topp -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-semibold tracking-tight">
+                Innmeldinger (Registerfører)
+            </h1>
+            <p class="mt-2 text-sm text-slate-400">
+                Her kan du som <span class="font-semibold text-slate-200">registerfører</span> se,
+                godkjenne, avslå og slette innmeldinger.
+            </p>
+        </div>
+
+        <a asp-action="MapAll"
+           class="inline-flex items-center rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
+                  shadow-lg shadow-sky-500/30 hover:bg-sky-700 active:scale-[0.98]
+                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0">
+            Se alle på kart
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
             <p class="text-xs uppercase text-slate-400">Totalt</p>
             <p class="text-2xl font-semibold">@total</p>
         </div>
-        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
-            <p class="text-xs uppercase text-slate-400">Avventer (Pending)</p>
+        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Pending</p>
             <p class="text-2xl font-semibold text-amber-300">@pending</p>
         </div>
-        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
-            <p class="text-xs uppercase text-slate-400">Godkjent</p>
+        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Approved</p>
             <p class="text-2xl font-semibold text-emerald-300">@approved</p>
+        </div>
+        <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Rejected</p>
+            <p class="text-2xl font-semibold text-rose-300">@rejected</p>
         </div>
     </div>
 
-    <!-- Selve tabellen -->
-    <div class="mt-4 rounded-2xl bg-slate-900/60 border border-slate-800 shadow overflow-hidden">
+    <!-- Filterpanel -->
+    <section class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4 space-y-4 mt-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                    Filtre
+                </p>
+                <p class="text-xs text-slate-500">
+                    Filtrer på tekst, høyde, status, dato og innmelder.
+                </p>
+            </div>
+
+            <p id="obstacle-count" class="text-xs text-slate-400">
+                <!-- fylles av JS -->
+            </p>
+        </div>
+
+        <div class="grid gap-3 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+            <!-- Tekst (navn/beskrivelse/reporter) -->
+            <div>
+                <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
+                    Søk (navn / beskrivelse / innmelder)
+                </label>
+                <input id="filter-text"
+                       type="text"
+                       placeholder="Søk i innmeldinger..."
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Min høyde -->
+            <div>
+                <label for="filter-min-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Min høyde (m)
+                </label>
+                <input id="filter-min-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="0"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Max høyde -->
+            <div>
+                <label for="filter-max-height" class="block text-xs font-medium text-slate-300 mb-1">
+                    Maks høyde (m)
+                </label>
+                <input id="filter-max-height"
+                       type="number" step="0.1" min="0"
+                       placeholder="f.eks. 50"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+
+            <!-- Status -->
+            <div>
+                <label for="filter-status" class="block text-xs font-medium text-slate-300 mb-1">
+                    Status
+                </label>
+                <select id="filter-status"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                               focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+                    <option value="all">Alle</option>
+                    <option value="pending">Kun Pending</option>
+                    <option value="approved">Kun Approved</option>
+                    <option value="other">Andre</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Dato-filter -->
+        <div class="grid gap-3 md:grid-cols-2">
+            <div>
+                <label for="filter-from-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    Fra dato
+                </label>
+                <input id="filter-from-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+            <div>
+                <label for="filter-to-date" class="block text-xs font-medium text-slate-300 mb-1">
+                    Til dato
+                </label>
+                <input id="filter-to-date"
+                       type="date"
+                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
+                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Tabell -->
+    <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur mt-4">
         @if (!Model.Any())
         {
             <div class="p-6 text-sm text-slate-400">
@@ -48,84 +184,143 @@
         }
         else
         {
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-900/80 border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-400">
+            <table class="min-w-full text-sm text-slate-100">
+                <thead class="bg-slate-900/90 border-b border-slate-800">
                     <tr>
-                        <th class="px-4 py-3">Id</th>
-                        <th class="px-4 py-3">Navn</th>
-                        <th class="px-4 py-3">Høyde (m)</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Opprettet</th>
-                        <th class="px-4 py-3 text-right">Handlinger</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Navn</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Innmeldt av</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Høyde (m)</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Opprettet</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Kart</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Handlinger</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800">
+                @{
+                    var idx = 0;
+                }
                 @foreach (var o in Model.OrderByDescending(x => x.CreatedAt))
                 {
-                    <tr class="hover:bg-slate-800/40">
-                        <td class="px-4 py-3 align-top text-slate-300">@o.Id</td>
-                        <td class="px-4 py-3 align-top font-medium text-slate-100">@o.ObstacleName</td>
-                        <td class="px-4 py-3 align-top text-slate-300">@o.ObstacleHeight</td>
+                    var mapId = $"map_{idx++}";
+                    var gj = string.IsNullOrWhiteSpace(o.GeometryGeoJson) ? null : o.GeometryGeoJson;
+                    var lat = o.Latitude;
+                    var lng = o.Longitude;
 
-                        <!-- Status med “badge”-stil -->
+                    <tr class="align-top hover:bg-slate-800/70 transition"
+                        data-id="@o.Id">
+                        <td class="px-4 py-3 align-top text-xs text-slate-400">
+                            @o.Id
+                        </td>
+
+                        <td class="px-4 py-3 align-top">
+                            <div class="font-medium text-slate-50">@o.ObstacleName</div>
+                            <div class="mt-1 text-xs text-slate-400 line-clamp-2">
+                                @o.ObstacleDescription
+                            </div>
+                        </td>
+
+                        <td class="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
+                            @(string.IsNullOrEmpty(o.ReporterEmail) ? "Ukjent" : o.ReporterEmail)
+                        </td>
+
+                        <td class="px-4 py-3 align-top text-sm text-slate-100">
+                            @o.ObstacleHeight
+                        </td>
+
                         <td class="px-4 py-3 align-top">
                             @{
                                 string badgeClasses = o.Status switch
                                 {
-                                    "Approved" => "bg-emerald-500/10 text-emerald-300 border-emerald-500/40",
-                                    "Rejected" => "bg-rose-500/10 text-rose-300 border-rose-500/40",
-                                    "Pending"  => "bg-amber-500/10 text-amber-300 border-amber-500/40",
-                                    _          => "bg-slate-700/60 text-slate-200 border-slate-500/40"
+                                    "Approved" => "bg-emerald-900/60 text-emerald-300 border-emerald-500/40",
+                                    "Rejected" => "bg-rose-900/60 text-rose-300 border-rose-500/40",
+                                    "Pending"  => "bg-amber-900/60 text-amber-200 border-amber-400/40",
+                                    _          => "bg-slate-800 text-slate-200 border-slate-600/60"
                                 };
                             }
-                            <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium @badgeClasses">
+                            <span class="inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-medium @badgeClasses">
                                 @o.Status
                             </span>
                         </td>
 
-                        <td class="px-4 py-3 align-top text-slate-300">
+                        <td class="px-4 py-3 align-top text-xs text-slate-400 whitespace-nowrap">
                             @o.CreatedAt.ToString("dd.MM.yyyy HH:mm")
                         </td>
 
-                        <!-- Handlinger -->
                         <td class="px-4 py-3 align-top">
-                            <div class="flex justify-end gap-2">
+                            <div id="@mapId"
+                                 class="mini-map map-skel"
+                                 data-geo='@Html.Raw(JsonSerializer.Serialize(gj ?? "", jsonOpts))'
+                                 data-lat='@Html.Raw(JsonSerializer.Serialize(lat))'
+                                 data-lng='@Html.Raw(JsonSerializer.Serialize(lng))'>
+                            </div>
+                        </td>
 
-                                <!-- NY: Se detaljer -->
-                                <a asp-action="Details" asp-route-id="@o.Id"
-                                   class="px-3 py-1.5 rounded-full text-xs font-medium
-                                          bg-slate-700 hover:bg-slate-600 text-slate-50
-                                          transition active:scale-[0.97]">
-                                    Se detaljer
-                                </a>
+                        <td class="px-4 py-3 align-top">
+                            <div class="flex flex-col gap-2 text-xs">
 
-                                <form asp-action="Approve" asp-route-id="@o.Id" method="post">
-                                    <button type="submit"
-                                            class="px-3 py-1.5 rounded-full text-xs font-medium
-                                                   bg-emerald-600 hover:bg-emerald-700 text-white
-                                                   transition active:scale-[0.97]">
-                                        Godkjenn
-                                    </button>
-                                </form>
+                                <!-- Rad 1: Se / Rediger -->
+                                <div class="flex gap-2">
+                                    <a asp-action="Details" asp-route-id="@o.Id"
+                                       class="flex-1 inline-flex justify-center rounded-full px-3 py-1.5
+                                              bg-slate-700 hover:bg-slate-600 text-slate-50 font-medium
+                                              transition active:scale-[0.97]">
+                                        Detaljer
+                                    </a>
 
-                                <form asp-action="Reject" asp-route-id="@o.Id" method="post">
-                                    <button type="submit"
-                                            class="px-3 py-1.5 rounded-full text-xs font-medium
-                                                   bg-amber-600 hover:bg-amber-700 text-white
-                                                   transition active:scale-[0.97]">
-                                        Avslå
-                                    </button>
-                                </form>
+                                    <a asp-action="Edit" asp-route-id="@o.Id"
+                                       class="flex-1 inline-flex justify-center rounded-full px-3 py-1.5
+                                              bg-cyan-700 hover:bg-cyan-600 text-white font-medium
+                                              transition active:scale-[0.97]">
+                                        Rediger
+                                    </a>
+                                </div>
 
-                                <form asp-action="Delete" asp-route-id="@o.Id" method="post"
-                                      onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
-                                    <button type="submit"
-                                            class="px-3 py-1.5 rounded-full text-xs font-medium
-                                                   bg-rose-600 hover:bg-rose-700 text-white
-                                                   transition active:scale-[0.97]">
-                                        Slett
-                                    </button>
-                                </form>
+                                <!-- Rad 2: Godkjenn / Avslå (kun når Pending) -->
+                                @if (string.Equals(o.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <div class="flex gap-2">
+                                        <form asp-action="Approve" asp-route-id="@o.Id" method="post" class="flex-1">
+                                            <button type="submit"
+                                                    class="w-full inline-flex justify-center rounded-full px-3 py-1.5
+                                                           bg-emerald-600 hover:bg-emerald-700 text-white font-medium
+                                                           transition active:scale-[0.97]">
+                                                Godkjenn
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="Reject" asp-route-id="@o.Id" method="post" class="flex-1">
+                                            <button type="submit"
+                                                    class="w-full inline-flex justify-center rounded-full px-3 py-1.5
+                                                           bg-amber-600 hover:bg-amber-700 text-white font-medium
+                                                           transition active:scale-[0.97]">
+                                                Avslå
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Liten infotekst når den ikke lenger er pending -->
+                                    <p class="text-[11px] text-slate-400 pl-1">
+                                        Ingen beslutning mulig (status: @o.Status).
+                                    </p>
+                                }
+
+                                <!-- Rad 3: Slett (alltid nederst, tydelig risikohandling) -->
+                                <div class="flex gap-2">
+                                    <form asp-action="Delete" asp-route-id="@o.Id" method="post"
+                                          class="flex-1"
+                                          onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
+                                        <button type="submit"
+                                                class="w-full inline-flex justify-center rounded-full px-3 py-1.5
+                                                       bg-rose-700 hover:bg-rose-800 text-white font-medium
+                                                       transition active:scale-[0.97]">
+                                            Slett
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -135,4 +330,189 @@
         }
     </div>
 
-</section>
+</div>
+
+@section Scripts {
+    <script>
+        // --- Data til filtrering (fra server) ---
+        const allItems = @Html.Raw(JsonSerializer.Serialize(
+            Model.Select(o => new {
+                id = o.Id,
+                name = o.ObstacleName,
+                desc = o.ObstacleDescription,
+                reporter = o.ReporterEmail,
+                height = o.ObstacleHeight,
+                status = o.Status,
+                createdAt = o.CreatedAt
+            }),
+            jsonOpts
+        ));
+
+        const rows = Array.from(document.querySelectorAll('tbody tr[data-id]'));
+
+        function applyRegisterforerFilters() {
+            const textInput = document.getElementById('filter-text');
+            const minInput = document.getElementById('filter-min-height');
+            const maxInput = document.getElementById('filter-max-height');
+            const statusSelect = document.getElementById('filter-status');
+            const fromInput = document.getElementById('filter-from-date');
+            const toInput = document.getElementById('filter-to-date');
+            const countEl = document.getElementById('obstacle-count');
+
+            const q = (textInput?.value || '').toLowerCase().trim();
+            const minH = parseFloat(minInput?.value || '');
+            const maxH = parseFloat(maxInput?.value || '');
+            const statusFilter = (statusSelect?.value || 'all').toLowerCase();
+
+            const fromVal = fromInput?.value || '';
+            const toVal = toInput?.value || '';
+            const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+            const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+            let visible = 0;
+
+            rows.forEach(row => {
+                const id = row.getAttribute('data-id');
+                const item = allItems.find(x => String(x.id) === String(id));
+                if (!item) {
+                    row.classList.remove('hidden');
+                    return;
+                }
+
+                let show = true;
+
+                // Tekstfilter – navn, beskrivelse, innmelder
+                if (q) {
+                    const combined = (
+                        (item.name || '') + ' ' +
+                        (item.desc || '') + ' ' +
+                        (item.reporter || '')
+                    ).toLowerCase();
+                    if (!combined.includes(q)) show = false;
+                }
+
+                // Høyde-filter
+                const h = typeof item.height === 'number'
+                    ? item.height
+                    : parseFloat(item.height || 'NaN');
+
+                if (!isNaN(minH) && !isNaN(h) && h < minH) show = false;
+                if (!isNaN(maxH) && !isNaN(h) && h > maxH) show = false;
+
+                // Status-filter
+                if (statusFilter !== 'all') {
+                    const s = (item.status || '').toLowerCase();
+                    if (statusFilter === 'pending' && s !== 'pending') show = false;
+                    else if (statusFilter === 'approved' && s !== 'approved') show = false;
+                    else if (statusFilter === 'other' && (s === 'pending' || s === 'approved')) show = false;
+                }
+
+                // Dato-filter
+                if (fromDate || toDate) {
+                    const created = item.createdAt ? new Date(item.createdAt) : null;
+                    if (!created || isNaN(created.getTime())) {
+                        show = false;
+                    } else {
+                        if (fromDate && created < fromDate) show = false;
+                        if (toDate && created > toDate) show = false;
+                    }
+                }
+
+                if (show) {
+                    row.classList.remove('hidden');
+                    visible++;
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+
+            if (countEl) {
+                countEl.textContent = `Viser ${visible} av ${rows.length} innmeldinger`;
+            }
+        }
+
+        // --- Mini-kart (Leaflet) ---
+        const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const maps = Array.from(document.querySelectorAll('.mini-map'));
+
+        function initMap(div) {
+            if (div.dataset.inited) return;
+            div.dataset.inited = "1";
+            div.classList.remove('map-skel');
+
+            const lat = JSON.parse(div.getAttribute('data-lat') || '0');
+            const lng = JSON.parse(div.getAttribute('data-lng') || '0');
+            let gjRaw = div.getAttribute('data-geo');
+            let gj = null;
+
+            try {
+                gj = JSON.parse(gjRaw || '""');
+                if (typeof gj === 'string') gj = gj ? JSON.parse(gj) : null;
+            } catch { }
+
+            const m = L.map(div, {
+                zoomControl: false,
+                attributionControl: false,
+                dragging: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            });
+
+            L.tileLayer(tiles, { maxZoom: 19 }).addTo(m);
+
+            if (gj) {
+                const layer = L.geoJSON(gj, { style: { color: '#38bdf8', weight: 2 } }).addTo(m);
+                try {
+                    const b = layer.getBounds();
+                    if (b && b.isValid()) {
+                        m.fitBounds(b, { padding: [5, 5] });
+                    } else {
+                        m.setView([63.4, 10.4], 5);
+                    }
+                } catch {
+                    m.setView([63.4, 10.4], 5);
+                }
+            } else if ((lat || lng) && !Number.isNaN(lat) && !Number.isNaN(lng)) {
+                L.marker([lat, lng]).addTo(m);
+                m.setView([lat, lng], 13);
+            } else {
+                m.setView([63.4, 10.4], 5);
+            }
+        }
+
+        const io = 'IntersectionObserver' in window
+            ? new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) initMap(e.target);
+                });
+            }, { rootMargin: '200px' })
+            : null;
+
+        maps.forEach(div => {
+            if (io) io.observe(div);
+            else initMap(div);
+        });
+
+        // --- Init filtrering ---
+        (function initFilters() {
+            const inputs = [
+                document.getElementById('filter-text'),
+                document.getElementById('filter-min-height'),
+                document.getElementById('filter-max-height'),
+                document.getElementById('filter-status'),
+                document.getElementById('filter-from-date'),
+                document.getElementById('filter-to-date')
+            ];
+
+            inputs.forEach(el => {
+                if (!el) return;
+                el.addEventListener('input', applyRegisterforerFilters);
+                el.addEventListener('change', applyRegisterforerFilters);
+            });
+
+            applyRegisterforerFilters();
+        })();
+    </script>
+}

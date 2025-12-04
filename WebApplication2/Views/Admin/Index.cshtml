@@ -40,10 +40,10 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
-                All obstacles
+                All obstacles (read-only)
             </h1>
             <p class="text-sm text-slate-400">
-                Review, approve or delete reported obstacles.
+                System-wide overview of all reported obstacles. Editing is handled by register officers.
             </p>
         </div>
 
@@ -155,7 +155,7 @@
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reported by</th> <!-- NY -->
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reported by</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Height</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Created</th>
@@ -187,7 +187,6 @@
                         </div>
                     </td>
 
-                    <!-- NY kolonne: hvem som rapporterte -->
                     <td class="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
                         @(string.IsNullOrEmpty(o.ReporterEmail) ? "Unknown" : o.ReporterEmail)
                     </td>
@@ -238,37 +237,7 @@
                                class="text-xs font-medium text-sky-300 hover:text-sky-200 underline underline-offset-2">
                                 Details
                             </a>
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <form asp-action="Approve"
-                                      asp-controller="Admin"
-                                      method="post"
-                                      class="inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@o.Id" />
-                                    <button type="submit"
-                                            class="inline-flex items-center rounded-xl bg-emerald-600 px-3 py-1.5 text-[11px] font-semibold text-white
-                                                   shadow-sm hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            @(string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase) ? "disabled" : null)>
-                                        Approve
-                                    </button>
-                                </form>
-
-                                <form asp-action="Delete"
-                                      asp-controller="Admin"
-                                      method="post"
-                                      class="inline"
-                                      onsubmit="return confirm('Are you sure you want to delete this report?');">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@o.Id" />
-                                    <button type="submit"
-                                            class="inline-flex items-center rounded-xl bg-rose-700 px-3 py-1.5 text-[11px] font-semibold text-white
-                                                   shadow-sm hover:bg-rose-800">
-                                        Delete
-                                    </button>
-                                </form>
-                            }
+                            @* Ingen Approve/Delete her – det håndteres av Registerforer *@
                         </div>
                     </td>
                 </tr>
@@ -293,7 +262,7 @@
                 id = o.Id,
                 name = o.ObstacleName,
                 desc = o.ObstacleDescription,
-                reporter = o.ReporterEmail,       // NYTT
+                reporter = o.ReporterEmail,
                 height = o.ObstacleHeight,
                 status = o.Status,
                 createdAt = o.CreatedAt
@@ -334,7 +303,7 @@
 
                 let show = true;
 
-                // Tekstfilter – inkluderer nå navn, beskrivelse og reporter
+                // Tekstfilter – inkluderer navn, beskrivelse og reporter
                 if (q) {
                     const combined = (
                         (item.name || '') + ' ' +

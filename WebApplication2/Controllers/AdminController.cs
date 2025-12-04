@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApplication2.Data;
 using WebApplication2.Models;
- 
- // Henter alle hindere fra databasen og viser dem enten i en liste (Index) eller på kart (MapAll)
+
+// Admin-oversikt for hindere (read-only)
 namespace WebApplication2.Controllers
 {
-    // Krever innlogging generelt
-    [Authorize]
+    // Kun Admin (eller legg til Registerfoerer hvis du vil at de også skal se denne)
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly IObstacleRepository _repo;
@@ -17,7 +17,7 @@ namespace WebApplication2.Controllers
             _repo = repo;
         }
 
-        // Oversikt over alle rapporter
+        // Oversikt over alle rapporter (lese)
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -25,27 +25,7 @@ namespace WebApplication2.Controllers
             return View(obstacles);
         }
 
-        // Kun Admin kan godkjenne
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Approve(int id)
-        {
-            await _repo.UpdateStatusAsync(id, "Approved");
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Kun Admin kan slette
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _repo.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Kartoversikt over alle rapporter
+        // Kartoversikt over alle rapporter (lese)
         [HttpGet]
         public async Task<IActionResult> MapAll()
         {

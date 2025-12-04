@@ -1,5 +1,6 @@
 // ...existing code...
 using Dapper;
+using Microsoft.AspNetCore.Connections;
 using System.Data;
 using System.Data.Common;
 using WebApplication2.Models;
@@ -59,6 +60,26 @@ SELECT LAST_INSERT_ID();";
             const string sql = "DELETE FROM obstacles WHERE Id = @Id;";
             await using var conn = _factory.CreateConnection();
             await conn.ExecuteAsync(sql, new { Id = id });
+        }
+
+        public async Task UpdateAsync(ObstacleData obstacle)
+        {
+            const string sql = @"
+UPDATE `obstacles`
+SET ObstacleName        = @ObstacleName,
+    ObstacleHeight      = @ObstacleHeight,
+    ObstacleDescription = @ObstacleDescription,
+    GeometryGeoJson     = @GeometryGeoJson,
+    Latitude            = @Latitude,
+    Longitude           = @Longitude
+WHERE Id = @Id;
+";
+
+            using var conn = _factory.CreateConnection();
+            if (conn.State == ConnectionState.Closed)
+                await conn.OpenAsync();
+
+            await conn.ExecuteAsync(sql, obstacle);
         }
 
     }
