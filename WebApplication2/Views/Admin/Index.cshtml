@@ -1,247 +1,152 @@
-﻿@model IEnumerable<WebApplication2.Models.ObstacleData>
-@using System.Text.Json
+﻿@model IEnumerable<WebApplication2.Models.AdminUserViewModel>
+
 @{
-    ViewData["Title"] = "Admin – Obstacles";
-    var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
+    ViewData["Title"] = "Admin – User & Roles";
 }
 
-@section Head {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div class="max-w-5xl mx-auto px-4 py-10 space-y-8">
 
-    <style>
-        .mini-map {
-            width: 180px;
-            height: 120px;
-            border-radius: 0.75rem;
-            overflow: hidden;
-        }
-
-        .map-skel {
-            background: linear-gradient(90deg, #0f172a 25%, #1e293b 37%, #0f172a 63%);
-            background-size: 400% 100%;
-            animation: sh 1.4s ease infinite;
-        }
-
-        @@keyframes sh {
-            0% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0 50%;
-            }
-        }
-    </style>
-}
-
-<div class="max-w-6xl mx-auto px-4 py-10 space-y-8">
-
-    <!-- Header / topp -->
+    <!-- Header -->
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-3xl font-semibold tracking-tight text-slate-50">
-                All obstacles (read-only)
+                User management
             </h1>
             <p class="text-sm text-slate-400">
-                System-wide overview of all reported obstacles. Editing is handled by register officers.
+                Manage which users are <span class="font-semibold">Pilot</span> or <span class="font-semibold">Registerfører</span>.
+                Admin role is reserved for system administrators.
             </p>
         </div>
 
-        <a asp-action="MapAll"
-           class="inline-flex items-center rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
-                  shadow-lg shadow-sky-500/30 hover:bg-sky-700 active:scale-[0.98]
-                  focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0">
-            View all on map
-        </a>
+        <div class="text-xs text-slate-400 space-y-1 sm:text-right">
+            <p>Legend:</p>
+            <p>
+                <span class="inline-flex items-center rounded-full bg-emerald-900/60 px-2 py-0.5 text-[11px] text-emerald-300 border border-emerald-500/40">
+                    Admin
+                </span>
+                <span class="inline-flex items-center rounded-full bg-sky-900/60 px-2 py-0.5 text-[11px] text-sky-300 border border-sky-500/40 ml-1">
+                    Registerfører
+                </span>
+                <span class="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[11px] text-slate-200 border border-slate-600/60 ml-1">
+                    Pilot
+                </span>
+            </p>
+        </div>
     </div>
 
-    <!-- Filterpanel -->
-    <section class="rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur px-4 py-4 space-y-4">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="space-y-1">
-                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    Filters
-                </p>
-                <p class="text-xs text-slate-500">
-                    Filter by text, height, status and created date.
-                </p>
-            </div>
-
-            <p id="obstacle-count" class="text-xs text-slate-400">
-                <!-- fylles av JS -->
-            </p>
+    @if (TempData["Message"] is string msg)
+    {
+        <div class="rounded-xl border border-emerald-600/60 bg-emerald-900/40 px-4 py-3 text-sm text-emerald-100">
+            @msg
         </div>
+    }
 
-        <div class="grid gap-3 lg:grid-cols-[2fr_1fr_1fr_1fr]">
-            <!-- Tekst (name/description) -->
-            <div>
-                <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
-                    Search (name / description / reporter)
-                </label>
-                <input id="filter-text"
-                       type="text"
-                       placeholder="Search obstacles..."
-                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
-            </div>
-
-            <!-- Min height -->
-            <div>
-                <label for="filter-min-height" class="block text-xs font-medium text-slate-300 mb-1">
-                    Min height (m)
-                </label>
-                <input id="filter-min-height"
-                       type="number" step="0.1" min="0"
-                       placeholder="0"
-                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
-            </div>
-
-            <!-- Max height -->
-            <div>
-                <label for="filter-max-height" class="block text-xs font-medium text-slate-300 mb-1">
-                    Max height (m)
-                </label>
-                <input id="filter-max-height"
-                       type="number" step="0.1" min="0"
-                       placeholder="e.g. 50"
-                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                              placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
-            </div>
-
-            <!-- Status -->
-            <div>
-                <label for="filter-status" class="block text-xs font-medium text-slate-300 mb-1">
-                    Status
-                </label>
-                <select id="filter-status"
-                        class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                               focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
-                    <option value="all">All</option>
-                    <option value="pending">Pending only</option>
-                    <option value="approved">Approved only</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Dato-filter -->
-        <div class="grid gap-3 md:grid-cols-2">
-            <div>
-                <label for="filter-from-date" class="block text-xs font-medium text-slate-300 mb-1">
-                    From date
-                </label>
-                <input id="filter-from-date"
-                       type="date"
-                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
-            </div>
-            <div>
-                <label for="filter-to-date" class="block text-xs font-medium text-slate-300 mb-1">
-                    To date
-                </label>
-                <input id="filter-to-date"
-                       type="date"
-                       class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
-                              focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
-            </div>
-        </div>
-    </section>
-
-    <!-- Tabell -->
+    <!-- Brukertabell -->
     <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl backdrop-blur">
         <table class="min-w-full text-sm text-slate-100">
             <thead class="bg-slate-900/90 border-b border-slate-800">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reported by</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Height</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Created</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Map</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Actions</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">User</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Roles</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Set role</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-800">
-            @{
-                var idx = 0;
-            }
-            @foreach (var o in Model)
-            {
-                var mapId = $"map_{idx++}";
-                var gj = string.IsNullOrWhiteSpace(o.GeometryGeoJson) ? null : o.GeometryGeoJson;
-                var lat = o.Latitude;
-                var lng = o.Longitude;
+                @foreach (var u in Model.OrderBy(x => x.Email))
+                {
+                    <tr class="hover:bg-slate-800/60 transition">
+                        <!-- Brukerinfo -->
+                        <td class="px-4 py-3 align-top">
+                            <div class="font-medium text-slate-50">
+                                @u.Email
+                            </div>
+                            <div class="text-[11px] text-slate-500 mt-0.5">
+                                Id: @u.UserId
+                            </div>
+                        </td>
 
-                <tr class="align-top hover:bg-slate-800/70 transition"
-                    data-id="@o.Id">
-                    <td class="px-4 py-3 align-top text-xs text-slate-400">
-                        @o.Id
-                    </td>
+                        <!-- Rolle-badges -->
+                        <td class="px-4 py-3 align-top">
+                            <div class="flex flex-wrap gap-1">
+                                @if (u.IsAdmin)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-emerald-900/60 px-2 py-0.5 text-[11px] font-medium text-emerald-300 border border-emerald-500/40">
+                                        Admin
+                                    </span>
+                                }
 
-                    <td class="px-4 py-3 align-top">
-                        <div class="font-medium text-slate-50">@o.ObstacleName</div>
-                        <div class="mt-1 text-xs text-slate-400 line-clamp-2">
-                            @o.ObstacleDescription
-                        </div>
-                    </td>
+                                @if (u.IsRegisterforer)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-sky-900/60 px-2 py-0.5 text-[11px] font-medium text-sky-300 border border-sky-500/40">
+                                        Registerfører
+                                    </span>
+                                }
 
-                    <td class="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
-                        @(string.IsNullOrEmpty(o.ReporterEmail) ? "Unknown" : o.ReporterEmail)
-                    </td>
+                                @if (u.IsPilot)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-200 border border-slate-600/60">
+                                        Pilot
+                                    </span>
+                                }
 
-                    <td class="px-4 py-3 align-top text-sm text-slate-100">
-                        @o.ObstacleHeight
-                    </td>
+                                @if (!u.IsAdmin && !u.IsRegisterforer && !u.IsPilot)
+                                {
+                                    <span class="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-300 border border-slate-600/60">
+                                        No role
+                                    </span>
+                                }
+                            </div>
+                        </td>
 
-                    <td class="px-4 py-3 align-top">
-                        @if (string.Equals(o.Status, "Approved", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <span class="inline-flex items-center rounded-full bg-emerald-900/60 px-3 py-1 text-[11px] font-medium text-emerald-300 border border-emerald-500/40">
-                                Approved
-                            </span>
-                        }
-                        else if (string.Equals(o.Status, "Pending", StringComparison.OrdinalIgnoreCase))
-                        {
-                            <span class="inline-flex items-center rounded-full bg-amber-900/60 px-3 py-1 text-[11px] font-medium text-amber-200 border border-amber-400/40">
-                                Pending
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="inline-flex items-center rounded-full bg-slate-800 px-3 py-1 text-[11px] font-medium text-slate-200 border border-slate-600/60">
-                                @o.Status
-                            </span>
-                        }
-                    </td>
+                        <!-- Handlingsknapper -->
+                        <td class="px-4 py-3 align-top">
+                            <div class="flex flex-wrap gap-2">
 
-                    <td class="px-4 py-3 align-top text-xs text-slate-400 whitespace-nowrap">
-                        @o.CreatedAt.ToString("yyyy-MM-dd HH:mm")
-                    </td>
+                                <!-- Set Pilot -->
+                                <form asp-action="SetAsPilot" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@u.UserId" />
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-[11px] font-semibold
+                                                   @(u.IsPilot ? "bg-slate-700 text-slate-100" : "bg-slate-800 text-slate-100 hover:bg-slate-700")
+                                                   border border-slate-600/70">
+                                        @(u.IsPilot ? "Pilot (current)" : "Set as Pilot")
+                                    </button>
+                                </form>
 
-                    <td class="px-4 py-3 align-top">
-                        <div id="@mapId"
-                             class="mini-map map-skel"
-                             data-geo='@Html.Raw(JsonSerializer.Serialize(gj ?? "", jsonOpts))'
-                             data-lat='@Html.Raw(JsonSerializer.Serialize(lat))'
-                             data-lng='@Html.Raw(JsonSerializer.Serialize(lng))'>
-                        </div>
-                    </td>
+                                <!-- Set Registerfører -->
+                                <form asp-action="SetAsRegisterforer" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@u.UserId" />
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-[11px] font-semibold
+                                                   @(u.IsRegisterforer ? "bg-sky-700 text-white" : "bg-sky-800 text-white hover:bg-sky-700")
+                                                   border border-sky-500/60">
+                                        @(u.IsRegisterforer ? "Registerfører (current)" : "Set as Registerfører")
+                                    </button>
+                                </form>
 
-                    <td class="px-4 py-3 align-top">
-                        <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <a asp-controller="Obstacle"
-                               asp-action="Overview"
-                               asp-route-id="@o.Id"
-                               class="text-xs font-medium text-sky-300 hover:text-sky-200 underline underline-offset-2">
-                                Details
-                            </a>
-                            @* Ingen Approve/Delete her – det håndteres av Registerforer *@
-                        </div>
-                    </td>
-                </tr>
-            }
+                                <!-- Fjern operasjonelle roller (valgfritt) -->
+                                <form asp-action="ClearOperationalRoles" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@u.UserId" />
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-[11px] font-medium
+                                                   bg-slate-900 text-slate-300 border border-slate-600/80 hover:bg-slate-800">
+                                        Clear Pilot / Registerfører
+                                    </button>
+                                </form>
+                            </div>
+
+                            @if (u.IsAdmin)
+                            {
+                                <p class="mt-2 text-[11px] text-emerald-300">
+                                    Admin role is not changed here. Use code/migrations if you need to change admins.
+                                </p>
+                            }
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
@@ -253,188 +158,3 @@
         </a>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // --- Data for filtrering (fra server) ---
-        const allItems = @Html.Raw(JsonSerializer.Serialize(
-            Model.Select(o => new {
-                id = o.Id,
-                name = o.ObstacleName,
-                desc = o.ObstacleDescription,
-                reporter = o.ReporterEmail,
-                height = o.ObstacleHeight,
-                status = o.Status,
-                createdAt = o.CreatedAt
-            }),
-            jsonOpts
-        ));
-
-        const rows = Array.from(document.querySelectorAll('tbody tr[data-id]'));
-
-        function applyAdminFilters() {
-            const textInput = document.getElementById('filter-text');
-            const minInput = document.getElementById('filter-min-height');
-            const maxInput = document.getElementById('filter-max-height');
-            const statusSelect = document.getElementById('filter-status');
-            const fromInput = document.getElementById('filter-from-date');
-            const toInput = document.getElementById('filter-to-date');
-            const countEl = document.getElementById('obstacle-count');
-
-            const q = (textInput?.value || '').toLowerCase().trim();
-            const minH = parseFloat(minInput?.value || '');
-            const maxH = parseFloat(maxInput?.value || '');
-            const statusFilter = (statusSelect?.value || 'all').toLowerCase();
-
-            const fromVal = fromInput?.value || '';
-            const toVal = toInput?.value || '';
-            const fromDate = fromVal ? new Date(fromVal + 'T00:00:00') : null;
-            const toDate = toVal ? new Date(toVal + 'T23:59:59') : null;
-
-            let visible = 0;
-
-            rows.forEach(row => {
-                const id = row.getAttribute('data-id');
-                const item = allItems.find(x => String(x.id) === String(id));
-                if (!item) {
-                    row.classList.remove('hidden');
-                    return;
-                }
-
-                let show = true;
-
-                // Tekstfilter – inkluderer navn, beskrivelse og reporter
-                if (q) {
-                    const combined = (
-                        (item.name || '') + ' ' +
-                        (item.desc || '') + ' ' +
-                        (item.reporter || '')
-                    ).toLowerCase();
-                    if (!combined.includes(q)) show = false;
-                }
-
-                // Høyde
-                const h = typeof item.height === 'number'
-                    ? item.height
-                    : parseFloat(item.height || 'NaN');
-
-                if (!isNaN(minH) && !isNaN(h) && h < minH) show = false;
-                if (!isNaN(maxH) && !isNaN(h) && h > maxH) show = false;
-
-                // Status
-                if (statusFilter !== 'all') {
-                    const s = (item.status || '').toLowerCase();
-                    if (statusFilter === 'pending' && s !== 'pending') show = false;
-                    else if (statusFilter === 'approved' && s !== 'approved') show = false;
-                    else if (statusFilter === 'other' && (s === 'pending' || s === 'approved')) show = false;
-                }
-
-                // Dato
-                if (fromDate || toDate) {
-                    const created = item.createdAt ? new Date(item.createdAt) : null;
-                    if (!created || isNaN(created.getTime())) {
-                        show = false;
-                    } else {
-                        if (fromDate && created < fromDate) show = false;
-                        if (toDate && created > toDate) show = false;
-                    }
-                }
-
-                if (show) {
-                    row.classList.remove('hidden');
-                    visible++;
-                } else {
-                    row.classList.add('hidden');
-                }
-            });
-
-            if (countEl) {
-                countEl.textContent = `Showing ${visible} of ${rows.length} obstacles`;
-            }
-        }
-
-        // --- Mini-kart (Leaflet) ---
-        const tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-        const maps = Array.from(document.querySelectorAll('.mini-map'));
-
-        function initMap(div) {
-            if (div.dataset.inited) return;
-            div.dataset.inited = "1";
-            div.classList.remove('map-skel');
-
-            const lat = JSON.parse(div.getAttribute('data-lat') || '0');
-            const lng = JSON.parse(div.getAttribute('data-lng') || '0');
-            let gjRaw = div.getAttribute('data-geo');
-            let gj = null;
-
-            try {
-                gj = JSON.parse(gjRaw || '""');
-                if (typeof gj === 'string') gj = gj ? JSON.parse(gj) : null;
-            } catch { }
-
-            const m = L.map(div, {
-                zoomControl: false,
-                attributionControl: false,
-                dragging: false,
-                scrollWheelZoom: false,
-                doubleClickZoom: false,
-                boxZoom: false,
-                keyboard: false
-            });
-
-            L.tileLayer(tiles, { maxZoom: 19 }).addTo(m);
-
-            if (gj) {
-                const layer = L.geoJSON(gj, { style: { color: '#38bdf8', weight: 2 } }).addTo(m);
-                try {
-                    const b = layer.getBounds();
-                    if (b && b.isValid()) {
-                        m.fitBounds(b, { padding: [5, 5] });
-                    } else {
-                        m.setView([63.4, 10.4], 5);
-                    }
-                } catch {
-                    m.setView([63.4, 10.4], 5);
-                }
-            } else if ((lat || lng) && !Number.isNaN(lat) && !Number.isNaN(lng)) {
-                L.marker([lat, lng]).addTo(m);
-                m.setView([lat, lng], 13);
-            } else {
-                m.setView([63.4, 10.4], 5);
-            }
-        }
-
-        const io = 'IntersectionObserver' in window
-            ? new IntersectionObserver(entries => {
-                entries.forEach(e => {
-                    if (e.isIntersecting) initMap(e.target);
-                });
-            }, { rootMargin: '200px' })
-            : null;
-
-        maps.forEach(div => {
-            if (io) io.observe(div);
-            else initMap(div);
-        });
-
-        // --- Init filtrering ---
-        (function initFilters() {
-            const inputs = [
-                document.getElementById('filter-text'),
-                document.getElementById('filter-min-height'),
-                document.getElementById('filter-max-height'),
-                document.getElementById('filter-status'),
-                document.getElementById('filter-from-date'),
-                document.getElementById('filter-to-date')
-            ];
-
-            inputs.forEach(el => {
-                if (!el) return;
-                el.addEventListener('input', applyAdminFilters);
-                el.addEventListener('change', applyAdminFilters);
-            });
-
-            applyAdminFilters();
-        })();
-    </script>
-}

@@ -50,30 +50,54 @@
             <!-- Desktop-nav -->
             <div class="hidden md:flex items-center gap-6">
                 <ul class="flex items-center gap-2 text-sm">
+                    <!-- Home: ALLTID Home/Index -->
                     <li>
                         <a asp-controller="Home" asp-action="Index"
                            class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Home", "Index")">
                             Home
                         </a>
                     </li>
+
                     <li>
                         <a asp-controller="Home" asp-action="Privacy"
                            class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Home", "Privacy")">
                             Privacy
                         </a>
                     </li>
-                    <li>
-                        <a asp-controller="Obstacle" asp-action="DataForm"
-                           class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Obstacle", "DataForm")">
-                            Register Obstacle
-                        </a>
-                    </li>
+
+                    @* ----- ADMIN ----- *@
                     @if (User.IsInRole("Admin"))
                     {
                         <li>
                             <a asp-controller="Admin" asp-action="Index"
                                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Admin", "Index")">
-                                Admin
+                                Admin panel
+                            </a>
+                        </li>
+                    }
+                    @* ----- REGISTERFØRER ----- *@
+                    else if (User.IsInRole("Registerforer"))
+                    {
+                        <li>
+                            <a asp-controller="Registerforer" asp-action="Index"
+                               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Registerforer", "Index")">
+                                Reports
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Registerforer" asp-action="MapAll"
+                               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Registerforer", "MapAll")">
+                                Map overview
+                            </a>
+                        </li>
+                    }
+                    @* ----- VANLIG BRUKER (PILOT / INGEN SPESIELL ROLLE) ----- *@
+                    else if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li>
+                            <a asp-controller="Obstacle" asp-action="DataForm"
+                               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Obstacle", "DataForm")">
+                                Report obstacle
                             </a>
                         </li>
                     }
@@ -83,6 +107,7 @@
                     @await Html.PartialAsync("_LoginPartial")
                 </div>
             </div>
+
 
             <!-- Mobile-menu button -->
             <button id="mobile-menu-button"
@@ -110,19 +135,35 @@
                        class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Home", "Index")">
                         <span>Home</span>
                     </a>
+
                     <a asp-controller="Home" asp-action="Privacy"
                        class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Home", "Privacy")">
                         <span>Privacy</span>
                     </a>
-                    <a asp-controller="Obstacle" asp-action="DataForm"
-                       class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Obstacle", "DataForm")">
-                        <span>Register Obstacle</span>
-                    </a>
+
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-controller="Admin" asp-action="Index"
                            class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Admin", "Index")">
-                            <span>Admin</span>
+                            <span>Admin panel</span>
+                        </a>
+                    }
+                    else if (User.IsInRole("Registerforer"))
+                    {
+                        <a asp-controller="Registerforer" asp-action="Index"
+                           class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Registerforer", "Index")">
+                            <span>Reports</span>
+                        </a>
+                        <a asp-controller="Registerforer" asp-action="MapAll"
+                           class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Registerforer", "MapAll")">
+                            <span>Map overview</span>
+                        </a>
+                    }
+                    else if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <a asp-controller="Obstacle" asp-action="DataForm"
+                           class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Obstacle", "DataForm")">
+                            <span>Report obstacle</span>
                         </a>
                     }
                 </nav>
@@ -132,6 +173,7 @@
                 </div>
             </div>
         </div>
+
     </header>
 
     <!-- MAIN -->

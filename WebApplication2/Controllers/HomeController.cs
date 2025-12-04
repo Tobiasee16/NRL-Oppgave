@@ -33,12 +33,12 @@ namespace WebApplication2.Controllers
         public async Task<IActionResult> Index()
         {
             // 1) Rolle-basert redirect
-            if (User.Identity?.IsAuthenticated == true)
+           // if (User.Identity?.IsAuthenticated == true)
             {
-                if (User.IsInRole("Registerforer"))
-                {
-                    return RedirectToAction("Index", "Registerforer");
-                }
+              //  if (User.IsInRole("Registerforer"))
+              //  {
+                 //   return RedirectToAction("Index", "Registerforer");
+              //  }
 
                 // Valgfritt: egen startside for admin
                 // if (User.IsInRole("Admin"))

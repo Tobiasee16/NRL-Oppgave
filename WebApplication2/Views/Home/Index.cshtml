@@ -10,41 +10,42 @@
     @if (User.IsInRole("Admin"))
     {
         <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Report Obstacle -->
-            <a asp-controller="Obstacle" asp-action="DataForm"
-               class="flex flex-col items-center justify-center rounded-2xl
-                          bg-sky-600 hover:bg-sky-700 text-white text-center p-8 shadow-xl
-                          transition active:scale-[0.98]">
-                <span class="text-2xl font-semibold">Report Obstacle</span>
-                <span class="text-sm opacity-80 mt-2">Register new aviation obstacle</span>
-            </a>
 
-            <!-- Obstacles Overview -->
-            <a asp-controller="Admin" asp-action="MapAll"
-               class="flex flex-col items-center justify-center rounded-2xl
-                          bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
-                          transition active:scale-[0.98]">
-                <span class="text-2xl font-semibold">Map</span>
-                <span class="text-sm opacity-80 mt-2">View all obstacle submissions in map</span>
-            </a>
-
-            <!-- Admin Panel -->
+            <!-- Admin Panel – eneste funksjon for Admin på forsiden -->
             <a asp-controller="Admin" asp-action="Index"
                class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
                           bg-rose-600 hover:bg-rose-700 text-white text-center p-8 shadow-xl
                           transition active:scale-[0.98]">
                 <span class="text-2xl font-semibold">Admin Panel</span>
-                <span class="text-sm opacity-80 mt-2">Approve or reject reports</span>
+                <span class="text-sm opacity-80 mt-2">
+                    Manage user roles and system configuration
+                </span>
+            </a>
+        </div>
+    }
+    @* --------------------- REGISTERFØRER DASHBOARD --------------------- *@
+    else if (User.IsInRole("Registerforer"))
+    {
+        <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">           
+
+            <!-- Rapportoversikt (liste) -->
+            <a asp-controller="Registerforer" asp-action="Index"
+               class="flex flex-col items-center justify-center rounded-2xl
+                          bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Reports overview</span>
+                <span class="text-sm opacity-80 mt-2">Review, approve or edit reports</span>
             </a>
 
-            <!-- View Heatmap -->
-            <a asp-controller="Home" asp-action="ObstacleHeatmap"
+            <!-- Kartoversikt (MapAll) -->
+            <a asp-controller="Registerforer" asp-action="MapAll"
                class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
-              bg-blue-600 hover:bg-blue-700 text-white text-center p-8 shadow-xl
-              transition active:scale-[0.98]">
-                <span class="text-2xl font-semibold">View Heatmap</span>
-                <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
+                          bg-slate-900 hover:bg-slate-800 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
+                <span class="text-2xl font-semibold">Map overview</span>
+                <span class="text-sm opacity-80 mt-2">View all obstacle submissions on map</span>
             </a>
+           
         </div>
     }
     @* --------------------- VANLIG BRUKER DASHBOARD (Pilot) --------------------- *@
@@ -52,7 +53,7 @@
     {
         <div class="max-w-4xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- Report Obstacle (vanlig bruker/pilot) -->
+            <!-- Report Obstacle (pilot) -->
             <a asp-controller="Obstacle" asp-action="DataForm"
                class="flex flex-col items-center justify-center rounded-2xl
                           bg-sky-600 hover:bg-sky-700 text-white text-center p-8 shadow-xl
@@ -61,22 +62,26 @@
                 <span class="text-sm opacity-80 mt-2">Submit a new report</span>
             </a>
 
-            <!-- Reports (vanlig bruker/pilot) -->
-           <a asp-controller="Admin" asp-action="MapAll"
+            <!-- Pilot Mode -->
+            <a asp-controller="Home" asp-action="PilotMode"
                class="flex flex-col items-center justify-center rounded-2xl
-                          bg-slate-800 hover:bg-slate-700 text-white text-center p-8 shadow-xl
+                          bg-emerald-600 hover:bg-emerald-700 text-white text-center p-8 shadow-xl
                           transition active:scale-[0.98]">
-                <span class="text-2xl font-semibold">Map</span>
-                <span class="text-sm opacity-80 mt-2">View all obstacle submissions in map</span>
+                <span class="text-2xl font-semibold">Pilot Mode</span>
+                <span class="text-sm opacity-80 mt-2">
+                    Live position with nearby obstacles
+                </span>
             </a>
 
-            <!-- View Heatmap -->
+            <!-- Heatmap (kun visning) -->
             <a asp-controller="Home" asp-action="ObstacleHeatmap"
                class="md:col-span-2 flex flex-col items-center justify-center rounded-2xl
-              bg-blue-600 hover:bg-blue-700 text-white text-center p-8 shadow-xl
-              transition active:scale-[0.98]">
+                          bg-blue-600 hover:bg-blue-700 text-white text-center p-8 shadow-xl
+                          transition active:scale-[0.98]">
                 <span class="text-2xl font-semibold">View Heatmap</span>
-                <span class="text-sm opacity-80 mt-2">See obstacle density (point data) in your area</span>
+                <span class="text-sm opacity-80 mt-2">
+                    See obstacle density (NRL point data) in your area
+                </span>
             </a>
         </div>
     }
@@ -110,10 +115,10 @@
     @if (!string.IsNullOrEmpty(Model))
     {
         <div class="max-w-md mx-auto mt-6 mb-4 text-center
-                    rounded-lg border border-emerald-300
-                    bg-emerald-50 text-emerald-700
-                    px-3 py-2 flex items-center justify-center gap-2
-                    text-sm shadow-sm">
+                        rounded-lg border border-emerald-300
+                        bg-emerald-50 text-emerald-700
+                        px-3 py-2 flex items-center justify-center gap-2
+                        text-sm shadow-sm">
             <span class="font-semibold">✓</span>
             <span>@Model</span>
         </div>

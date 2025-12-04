@@ -5,6 +5,7 @@ using WebApplication2.Models;
 
 namespace WebApplication2.Controllers
 {
+    // Kun registerførere skal kunne se og endre innmeldinger
     [Authorize(Roles = "Registerforer")]
     public class RegisterforerController : Controller
     {
@@ -15,26 +16,49 @@ namespace WebApplication2.Controllers
             _obstacleRepository = obstacleRepository;
         }
 
-        // Hovedsiden for registerfører: viser alle innmeldinger
+        // ----------------------------------------------------
+        // LISTE / OVERSIKT
+        // ----------------------------------------------------
+
+        // Hovedsiden for registerfører: viser alle innmeldinger i tabell
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var obstacles = await _obstacleRepository.ListAsync();
-            return View(obstacles);
+            return View(obstacles);   // Views/Registerforer/Index.cshtml
         }
 
-        // Detaljside for en spesifikk innmelding
+        // Kartoversikt over alle innmeldinger
+        [HttpGet]
+        public async Task<IActionResult> MapAll()
+        {
+            var obstacles = await _obstacleRepository.ListAsync();
+
+            // Gjenbruker eksisterende MapAll-view som lå under Admin
+            // (du kan eventuelt flytte fila til Views/Registerforer/MapAll.cshtml senere)
+            return View("~/Views/Admin/MapAll.cshtml", obstacles);
+        }
+
+        // ----------------------------------------------------
+        // DETALJVISNING
+        // ----------------------------------------------------
+
+        // Detaljside for én innmelding (lese alt + kart)
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var obstacle = await _obstacleRepository.GetByIdAsync(id);
             if (obstacle == null)
                 return NotFound();
 
-            return View(obstacle);
+            return View(obstacle);    // Views/Registerforer/Details.cshtml
         }
 
-        // --------- REDIGERING ---------
+        // ----------------------------------------------------
+        // REDIGERING
+        // ----------------------------------------------------
 
-        // GET: /Registerforer/Edit/5
+        // GET: /Registerforer/Edit/5 – viser skjema med eksisterende verdier
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -42,10 +66,10 @@ namespace WebApplication2.Controllers
             if (obstacle == null)
                 return NotFound();
 
-            return View(obstacle);
+            return View(obstacle);    // Views/Registerforer/Edit.cshtml
         }
 
-        // POST: /Registerforer/Edit/5
+        // POST: /Registerforer/Edit/5 – lagrer endringer
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ObstacleData formModel)
@@ -61,7 +85,7 @@ namespace WebApplication2.Controllers
             if (existing == null)
                 return NotFound();
 
-            // Oppdater kun feltene som registerfører skal kunne endre
+            // Feltene registerfører faktisk skal kunne endre:
             existing.ObstacleName = formModel.ObstacleName;
             existing.ObstacleHeight = formModel.ObstacleHeight;
             existing.ObstacleDescription = formModel.ObstacleDescription;
@@ -71,13 +95,15 @@ namespace WebApplication2.Controllers
 
             await _obstacleRepository.UpdateAsync(existing);
 
-            // Valgfritt: liten beskjed
             TempData["Message"] = "Innmelding oppdatert.";
 
+            // Tilbake til detaljer for samme hinder
             return RedirectToAction(nameof(Details), new { id = existing.Id });
         }
 
-        // --------- STATUS / SLETT ---------
+        // ----------------------------------------------------
+        // STATUS / SLETT
+        // ----------------------------------------------------
 
         // Godkjenn en innmelding
         [HttpPost]
@@ -105,15 +131,5 @@ namespace WebApplication2.Controllers
             await _obstacleRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
-
-        [HttpGet]
-        public async Task<IActionResult> MapAll()
-        {
-            var obstacles = await _obstacleRepository.ListAsync();
-
-            // Gjenbruk Admin sitt MapAll-view
-            return View("~/Views/Admin/MapAll.cshtml", obstacles);
-        }
-
     }
 }
