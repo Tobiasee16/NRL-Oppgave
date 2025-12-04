@@ -45,6 +45,24 @@ builder.Services
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // ------------------------
+//  Identity-cookie (login-cookie)
+// ------------------------
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    // Hvor brukeren sendes hvis de må logge inn
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+
+    // Viktig for at cookies funker fint i dev/Docker
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;              // Løsner litt på SameSite, ellers kan cookies blokkeres
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;   // Tillat HTTP (greit i dev uten HTTPS)
+    options.SlidingExpiration = true;                        // Forlenger levetid når brukeren er aktiv
+});
+
+
+// ------------------------
 //  MVC + Razor Pages (for Identity UI)
 // ------------------------
 builder.Services.AddControllersWithViews();
