@@ -1,8 +1,6 @@
-// ...existing code...
 using Dapper;
-using Microsoft.AspNetCore.Connections;
+using MySqlConnector;
 using System.Data;
-using System.Data.Common;
 using WebApplication2.Models;
 
 namespace WebApplication2.Data
@@ -20,9 +18,9 @@ namespace WebApplication2.Data
         {
             const string insertSql = @"
 INSERT INTO `obstacles`
-  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt, Status, ReporterEmail)
+  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt, Status, ReporterEmail, SubmittedByUserId)
 VALUES
-  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt, @Status, @ReporterEmail);
+  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt, @Status, @ReporterEmail, @SubmittedByUserId);
 SELECT LAST_INSERT_ID();";
 
             using var conn = _factory.CreateConnection();
@@ -50,15 +48,17 @@ SELECT LAST_INSERT_ID();";
 
         public async Task UpdateStatusAsync(int id, string status)
         {
-            const string sql = "UPDATE obstacles SET Status = @Status WHERE Id = @Id;";
+            const string sql = "UPDATE `obstacles` SET Status = @Status WHERE Id = @Id;";
             await using var conn = _factory.CreateConnection();
+            if (conn.State == ConnectionState.Closed) await conn.OpenAsync();
             await conn.ExecuteAsync(sql, new { Id = id, Status = status });
         }
 
         public async Task DeleteAsync(int id)
         {
-            const string sql = "DELETE FROM obstacles WHERE Id = @Id;";
+            const string sql = "DELETE FROM `obstacles` WHERE Id = @Id;";
             await using var conn = _factory.CreateConnection();
+            if (conn.State == ConnectionState.Closed) await conn.OpenAsync();
             await conn.ExecuteAsync(sql, new { Id = id });
         }
 
@@ -82,5 +82,17 @@ WHERE Id = @Id;
             await conn.ExecuteAsync(sql, obstacle);
         }
 
+        public async Task<IEnumerable<ObstacleData>> GetByReporterAsync(string userId)
+        {
+            const string sql = @"
+SELECT *
+FROM `obstacles`
+WHERE SubmittedByUserId = @UserId
+ORDER BY CreatedAt DESC;";
+
+            using var conn = _factory.CreateConnection();
+            if (conn.State == ConnectionState.Closed) await conn.OpenAsync();
+            return await conn.QueryAsync<ObstacleData>(sql, new { UserId = userId });
+        }
     }
 }

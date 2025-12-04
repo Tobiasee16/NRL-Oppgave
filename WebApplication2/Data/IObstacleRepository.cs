@@ -12,5 +12,6 @@ namespace WebApplication2.Data
         Task UpdateStatusAsync(int id, string status);
         Task DeleteAsync(int id);
         Task UpdateAsync(ObstacleData obstacle);
+        Task<IEnumerable<ObstacleData>> GetByReporterAsync(string userId);
     }
 }

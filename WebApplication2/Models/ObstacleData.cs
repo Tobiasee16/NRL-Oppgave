@@ -35,7 +35,7 @@ namespace WebApplication2.Models
 
         public string Status { get; set; } = "Pending";
 
-
+        public string? SubmittedByUserId { get; set; }
 
     }
 

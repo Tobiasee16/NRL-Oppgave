@@ -91,13 +91,19 @@
                             </a>
                         </li>
                     }
-                    @* ----- VANLIG BRUKER (PILOT / INGEN SPESIELL ROLLE) ----- *@
+                    @* ----- PILOT / VANLIG INNLOGGET BRUKER ----- *@
                     else if (User.Identity?.IsAuthenticated ?? false)
                     {
                         <li>
                             <a asp-controller="Obstacle" asp-action="DataForm"
                                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Obstacle", "DataForm")">
                                 Report obstacle
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="Obstacle" asp-action="MyReports"
+                               class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors @Active("Obstacle", "MyReports")">
+                                My reports
                             </a>
                         </li>
                     }
@@ -164,6 +170,10 @@
                         <a asp-controller="Obstacle" asp-action="DataForm"
                            class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Obstacle", "DataForm")">
                             <span>Report obstacle</span>
+                        </a>
+                        <a asp-controller="Obstacle" asp-action="MyReports"
+                           class="flex items-center justify-between rounded-xl px-3 py-2 font-medium @Active("Obstacle", "MyReports")">
+                            <span>My reports</span>
                         </a>
                     }
                 </nav>
