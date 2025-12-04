@@ -11,13 +11,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    @RenderSection("Head", required: false)
-</head>
-
-<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -26,9 +19,11 @@
     <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Din egen CSS (valgfritt, for spesialtilpasninger) -->
+    <!-- Din egen CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication2.styles.css" asp-append-version="true" />
+
+    @RenderSection("Head", required: false)
 </head>
 <body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased">
 
@@ -84,11 +79,9 @@
                     }
                 </ul>
 
-                <!-- Login-del -->
                 <div class="flex items-center gap-3 text-sm [&>*]:flex [&>*]:items-center [&>*]:gap-2">
                     @await Html.PartialAsync("_LoginPartial")
                 </div>
-
             </div>
 
             <!-- Mobile-menu button -->
@@ -151,9 +144,8 @@
     <!-- FOOTER -->
     <footer class="border-t border-slate-800 bg-slate-950">
         <div class="max-w-6xl mx-auto px-4 py-4 text-[11px] md:text-xs text-slate-400 flex flex-col md:flex-row items-center justify-between gap-2">
-            <span>© @DateTime.Now.Year – Luftfartshindringer (NRL) – NRL Application</span>
+            <span>© @DateTime.Now.Year – Luftfartshindringer (NRL)</span>
             <span class="flex items-center gap-2">
-                <span class="hidden md:inline">Bygget med</span>
                 <span class="inline-flex items-center gap-1 rounded-full border border-slate-700 px-2 py-0.5 text-[11px]">
                     <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span>
                     <span>ASP.NET Core &amp; Tailwind CSS</span>
@@ -170,7 +162,6 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-        // Enkel toggling av mobilmeny uten Bootstrap
         document.addEventListener("DOMContentLoaded", function () {
             const btn = document.getElementById("mobile-menu-button");
             const menu = document.getElementById("mobile-menu");
@@ -183,6 +174,6 @@
         });
     </script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

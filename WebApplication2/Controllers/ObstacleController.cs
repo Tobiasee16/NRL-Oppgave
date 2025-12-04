@@ -2,10 +2,11 @@
 using WebApplication2.Models;
 using WebApplication2.Data;
 using Microsoft.AspNetCore.Authorization;
+using AspNetCoreGeneratedDocument;
 
 namespace WebApplication2.Controllers
 {
-    [Authorize] // hele controlleren krever login
+    [Authorize(Roles = "Pilot")] // kun piloter kan bruke denne kontrolleren
     public class ObstacleController : Controller
     {
         private readonly IObstacleRepository _repo;

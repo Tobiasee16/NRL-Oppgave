@@ -1,0 +1,138 @@
+@model IEnumerable<WebApplication2.Models.ObstacleData>
+
+@{
+    ViewData["Title"] = "Innmeldinger – Registerfører";
+}
+
+<section class="px-4 py-10 max-w-6xl mx-auto text-slate-100">
+
+    <!-- Tittel + intro -->
+    <header class="mb-6">
+        <h1 class="text-3xl font-semibold tracking-tight">Innmeldinger (Registerfører)</h1>
+        <p class="mt-2 text-sm text-slate-400">
+            Her kan du som <span class="font-semibold text-slate-200">registerfører</span> se, godkjenne, avslå
+            og slette innmeldinger.
+        </p>
+    </header>
+
+    <!-- Kort oversikt / stats -->
+    @{
+        var total = Model.Count();
+        var pending = Model.Count(o => o.Status == "Pending");
+        var approved = Model.Count(o => o.Status == "Approved");
+        var rejected = Model.Count(o => o.Status == "Rejected");
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Totalt</p>
+            <p class="text-2xl font-semibold">@total</p>
+        </div>
+        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Avventer (Pending)</p>
+            <p class="text-2xl font-semibold text-amber-300">@pending</p>
+        </div>
+        <div class="rounded-2xl bg-slate-800 px-4 py-3 shadow">
+            <p class="text-xs uppercase text-slate-400">Godkjent</p>
+            <p class="text-2xl font-semibold text-emerald-300">@approved</p>
+        </div>
+    </div>
+
+    <!-- Selve tabellen -->
+    <div class="mt-4 rounded-2xl bg-slate-900/60 border border-slate-800 shadow overflow-hidden">
+        @if (!Model.Any())
+        {
+            <div class="p-6 text-sm text-slate-400">
+                Det er ingen innmeldinger ennå.
+            </div>
+        }
+        else
+        {
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-900/80 border-b border-slate-800 text-left text-xs uppercase tracking-wide text-slate-400">
+                    <tr>
+                        <th class="px-4 py-3">Id</th>
+                        <th class="px-4 py-3">Navn</th>
+                        <th class="px-4 py-3">Høyde (m)</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Opprettet</th>
+                        <th class="px-4 py-3 text-right">Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                @foreach (var o in Model.OrderByDescending(x => x.CreatedAt))
+                {
+                    <tr class="hover:bg-slate-800/40">
+                        <td class="px-4 py-3 align-top text-slate-300">@o.Id</td>
+                        <td class="px-4 py-3 align-top font-medium text-slate-100">@o.ObstacleName</td>
+                        <td class="px-4 py-3 align-top text-slate-300">@o.ObstacleHeight</td>
+
+                        <!-- Status med “badge”-stil -->
+                        <td class="px-4 py-3 align-top">
+                            @{
+                                string badgeClasses = o.Status switch
+                                {
+                                    "Approved" => "bg-emerald-500/10 text-emerald-300 border-emerald-500/40",
+                                    "Rejected" => "bg-rose-500/10 text-rose-300 border-rose-500/40",
+                                    "Pending"  => "bg-amber-500/10 text-amber-300 border-amber-500/40",
+                                    _          => "bg-slate-700/60 text-slate-200 border-slate-500/40"
+                                };
+                            }
+                            <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium @badgeClasses">
+                                @o.Status
+                            </span>
+                        </td>
+
+                        <td class="px-4 py-3 align-top text-slate-300">
+                            @o.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                        </td>
+
+                        <!-- Handlinger -->
+                        <td class="px-4 py-3 align-top">
+                            <div class="flex justify-end gap-2">
+
+                                <!-- NY: Se detaljer -->
+                                <a asp-action="Details" asp-route-id="@o.Id"
+                                   class="px-3 py-1.5 rounded-full text-xs font-medium
+                                          bg-slate-700 hover:bg-slate-600 text-slate-50
+                                          transition active:scale-[0.97]">
+                                    Se detaljer
+                                </a>
+
+                                <form asp-action="Approve" asp-route-id="@o.Id" method="post">
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-xs font-medium
+                                                   bg-emerald-600 hover:bg-emerald-700 text-white
+                                                   transition active:scale-[0.97]">
+                                        Godkjenn
+                                    </button>
+                                </form>
+
+                                <form asp-action="Reject" asp-route-id="@o.Id" method="post">
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-xs font-medium
+                                                   bg-amber-600 hover:bg-amber-700 text-white
+                                                   transition active:scale-[0.97]">
+                                        Avslå
+                                    </button>
+                                </form>
+
+                                <form asp-action="Delete" asp-route-id="@o.Id" method="post"
+                                      onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
+                                    <button type="submit"
+                                            class="px-3 py-1.5 rounded-full text-xs font-medium
+                                                   bg-rose-600 hover:bg-rose-700 text-white
+                                                   transition active:scale-[0.97]">
+                                        Slett
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</section>
