@@ -46,6 +46,16 @@
                     @Model.ObstacleHeight m
                 </p>
             </div>
+
+            <!-- NY: Hvem som har meldt inn hindret -->
+            <div class="space-y-1">
+                <p class="text-xs uppercase tracking-[0.18em] text-slate-400">
+                    Reported by
+                </p>
+                <p class="text-sm font-medium text-slate-50">
+                    @(string.IsNullOrEmpty(Model.ReporterEmail) ? "Unknown" : Model.ReporterEmail)
+                </p>
+            </div>
         </div>
 
         <div class="space-y-1">

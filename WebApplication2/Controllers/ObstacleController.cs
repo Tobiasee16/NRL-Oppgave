@@ -34,6 +34,14 @@ namespace WebApplication2.Controllers
 
             try
             {
+                // 🔹 Hent innlogget bruker (typisk e-post) og lagre på hindret
+                var reporterEmail = User.Identity?.Name;  // f.eks. "pilot@luftambulanse.no"
+                obstacledata.ReporterEmail = reporterEmail;
+
+                // Evt. sett standard-status hvis du ikke allerede gjør det i repo
+                if (string.IsNullOrEmpty(obstacledata.Status))
+                    obstacledata.Status = "Pending";
+
                 var newId = await _repo.InsertAsync(obstacledata);
                 return RedirectToAction(nameof(Overview), new { id = newId });
             }
@@ -43,6 +51,7 @@ namespace WebApplication2.Controllers
                 return View(obstacledata);
             }
         }
+
 
         // GET: /Obstacle/Overview/{id}
         [HttpGet]

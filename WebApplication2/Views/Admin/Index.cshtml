@@ -76,7 +76,7 @@
             <!-- Tekst (name/description) -->
             <div>
                 <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
-                    Search (name / description)
+                    Search (name / description / reporter)
                 </label>
                 <input id="filter-text"
                        type="text"
@@ -155,6 +155,7 @@
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Name</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reported by</th> <!-- NY -->
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Height</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Created</th>
@@ -184,6 +185,11 @@
                         <div class="mt-1 text-xs text-slate-400 line-clamp-2">
                             @o.ObstacleDescription
                         </div>
+                    </td>
+
+                    <!-- NY kolonne: hvem som rapporterte -->
+                    <td class="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
+                        @(string.IsNullOrEmpty(o.ReporterEmail) ? "Unknown" : o.ReporterEmail)
                     </td>
 
                     <td class="px-4 py-3 align-top text-sm text-slate-100">
@@ -287,6 +293,7 @@
                 id = o.Id,
                 name = o.ObstacleName,
                 desc = o.ObstacleDescription,
+                reporter = o.ReporterEmail,       // NYTT
                 height = o.ObstacleHeight,
                 status = o.Status,
                 createdAt = o.CreatedAt
@@ -327,9 +334,13 @@
 
                 let show = true;
 
-                // Tekstfilter
+                // Tekstfilter – inkluderer nå navn, beskrivelse og reporter
                 if (q) {
-                    const combined = ((item.name || '') + ' ' + (item.desc || '')).toLowerCase();
+                    const combined = (
+                        (item.name || '') + ' ' +
+                        (item.desc || '') + ' ' +
+                        (item.reporter || '')
+                    ).toLowerCase();
                     if (!combined.includes(q)) show = false;
                 }
 

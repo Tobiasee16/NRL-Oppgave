@@ -19,9 +19,9 @@ namespace WebApplication2.Data
         {
             const string insertSql = @"
 INSERT INTO `obstacles`
-  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt, Status)
+  (ObstacleName, ObstacleHeight, ObstacleDescription, Latitude, Longitude, GeometryGeoJson, CreatedAt, Status, ReporterEmail)
 VALUES
-  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt, @Status);
+  (@ObstacleName, @ObstacleHeight, @ObstacleDescription, @Latitude, @Longitude, @GeometryGeoJson, @CreatedAt, @Status, @ReporterEmail);
 SELECT LAST_INSERT_ID();";
 
             using var conn = _factory.CreateConnection();
