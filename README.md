@@ -102,7 +102,8 @@ CREATE TABLE IF NOT EXISTS obstacles (
     Latitude DOUBLE NULL,
     Longitude DOUBLE NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Status VARCHAR(20) NOT NULL DEFAULT 'Pending'
+    Status VARCHAR(20) NOT NULL DEFAULT 'Pending',
+    SubmittedByUserId VARCHAR(255) NULL
 );
 
 ### DevOps / Infrastructure
