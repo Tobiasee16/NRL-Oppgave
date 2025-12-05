@@ -1,7 +1,7 @@
 @model IEnumerable<WebApplication2.Models.ObstacleData>
 @using System.Text.Json
 @{
-    ViewData["Title"] = "Innmeldinger – Registerfører";
+    ViewData["Title"] = "Submissions";
     var jsonOpts = new JsonSerializerOptions { WriteIndented = false };
 
     var total = Model.Count();
@@ -45,11 +45,11 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-3xl font-semibold tracking-tight">
-                Innmeldinger (Registerfører)
+                Submissions (Registrar)
             </h1>
             <p class="mt-2 text-sm text-slate-400">
-                Her kan du som <span class="font-semibold text-slate-200">registerfører</span> se,
-                godkjenne, avslå og slette innmeldinger.
+                Here you as a <span class="font-semibold text-slate-200">registrar</span> can view,
+                approve, reject and delete submissions.
             </p>
         </div>
 
@@ -57,14 +57,14 @@
            class="inline-flex items-center rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white
                   shadow-lg shadow-sky-500/30 hover:bg-sky-700 active:scale-[0.98]
                   focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-0">
-            Se alle på kart
+            View all on map
         </a>
     </div>
 
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
-            <p class="text-xs uppercase text-slate-400">Totalt</p>
+            <p class="text-xs uppercase text-slate-400">Total</p>
             <p class="text-2xl font-semibold">@total</p>
         </div>
         <div class="rounded-2xl bg-slate-900/80 border border-slate-800 px-4 py-3 shadow">
@@ -86,15 +86,15 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="space-y-1">
                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                    Filtre
+                    Filters
                 </p>
                 <p class="text-xs text-slate-500">
-                    Filtrer på tekst, høyde, status, dato og innmelder.
+                    Filter by text, height, status, date and reporter.
                 </p>
             </div>
 
             <p id="obstacle-count" class="text-xs text-slate-400">
-                <!-- fylles av JS -->
+                <!-- filled by JS -->
             </p>
         </div>
 
@@ -102,11 +102,11 @@
             <!-- Tekst (navn/beskrivelse/reporter) -->
             <div>
                 <label for="filter-text" class="block text-xs font-medium text-slate-300 mb-1">
-                    Søk (navn / beskrivelse / innmelder)
+                    Search (name / description / reporter)
                 </label>
                 <input id="filter-text"
                        type="text"
-                       placeholder="Søk i innmeldinger..."
+                       placeholder="Search submissions..."
                        class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
                               placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
             </div>
@@ -114,7 +114,7 @@
             <!-- Min høyde -->
             <div>
                 <label for="filter-min-height" class="block text-xs font-medium text-slate-300 mb-1">
-                    Min høyde (m)
+                    Min height (m)
                 </label>
                 <input id="filter-min-height"
                        type="number" step="0.1" min="0"
@@ -126,11 +126,11 @@
             <!-- Max høyde -->
             <div>
                 <label for="filter-max-height" class="block text-xs font-medium text-slate-300 mb-1">
-                    Maks høyde (m)
+                    Max height (m)
                 </label>
                 <input id="filter-max-height"
                        type="number" step="0.1" min="0"
-                       placeholder="f.eks. 50"
+                       placeholder="e.g. 50"
                        class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
                               placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500" />
             </div>
@@ -143,10 +143,10 @@
                 <select id="filter-status"
                         class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm text-slate-100
                                focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
-                    <option value="all">Alle</option>
-                    <option value="pending">Kun Pending</option>
-                    <option value="approved">Kun Approved</option>
-                    <option value="other">Andre</option>
+                    <option value="all">All</option>
+                    <option value="pending">Only Pending</option>
+                    <option value="approved">Only Approved</option>
+                    <option value="other">Others</option>
                 </select>
             </div>
         </div>
@@ -155,7 +155,7 @@
         <div class="grid gap-3 md:grid-cols-2">
             <div>
                 <label for="filter-from-date" class="block text-xs font-medium text-slate-300 mb-1">
-                    Fra dato
+                    From date
                 </label>
                 <input id="filter-from-date"
                        type="date"
@@ -164,7 +164,7 @@
             </div>
             <div>
                 <label for="filter-to-date" class="block text-xs font-medium text-slate-300 mb-1">
-                    Til dato
+                    To date
                 </label>
                 <input id="filter-to-date"
                        type="date"
@@ -179,7 +179,7 @@
         @if (!Model.Any())
         {
             <div class="p-6 text-sm text-slate-400">
-                Det er ingen innmeldinger ennå.
+                There are no submissions yet.
             </div>
         }
         else
@@ -188,13 +188,13 @@
                 <thead class="bg-slate-900/90 border-b border-slate-800">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">ID</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Navn</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Innmeldt av</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Høyde (m)</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Name</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reported by</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Height (m)</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Opprettet</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Kart</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Handlinger</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Created</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Map</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800">
@@ -222,7 +222,7 @@
                         </td>
 
                         <td class="px-4 py-3 align-top text-xs text-slate-300 whitespace-nowrap">
-                            @(string.IsNullOrEmpty(o.ReporterEmail) ? "Ukjent" : o.ReporterEmail)
+                            @(string.IsNullOrEmpty(o.ReporterEmail) ? "Unknown" : o.ReporterEmail)
                         </td>
 
                         <td class="px-4 py-3 align-top text-sm text-slate-100">
@@ -266,14 +266,14 @@
                                        class="flex-1 inline-flex justify-center rounded-full px-3 py-1.5
                                               bg-slate-700 hover:bg-slate-600 text-slate-50 font-medium
                                               transition active:scale-[0.97]">
-                                        Detaljer
+                                        Details
                                     </a>
 
                                     <a asp-action="Edit" asp-route-id="@o.Id"
                                        class="flex-1 inline-flex justify-center rounded-full px-3 py-1.5
                                               bg-cyan-700 hover:bg-cyan-600 text-white font-medium
                                               transition active:scale-[0.97]">
-                                        Rediger
+                                        Edit
                                     </a>
                                 </div>
 
@@ -286,7 +286,7 @@
                                                     class="w-full inline-flex justify-center rounded-full px-3 py-1.5
                                                            bg-emerald-600 hover:bg-emerald-700 text-white font-medium
                                                            transition active:scale-[0.97]">
-                                                Godkjenn
+                                                Approve
                                             </button>
                                         </form>
 
@@ -295,7 +295,7 @@
                                                     class="w-full inline-flex justify-center rounded-full px-3 py-1.5
                                                            bg-amber-600 hover:bg-amber-700 text-white font-medium
                                                            transition active:scale-[0.97]">
-                                                Avslå
+                                                Reject
                                             </button>
                                         </form>
                                     </div>
@@ -304,7 +304,7 @@
                                 {
                                     <!-- Liten infotekst når den ikke lenger er pending -->
                                     <p class="text-[11px] text-slate-400 pl-1">
-                                        Ingen beslutning mulig (status: @o.Status).
+                                        No decision possible (status: @o.Status).
                                     </p>
                                 }
 
@@ -312,12 +312,12 @@
                                 <div class="flex gap-2">
                                     <form asp-action="Delete" asp-route-id="@o.Id" method="post"
                                           class="flex-1"
-                                          onsubmit="return confirm('Er du sikker på at du vil slette denne innmeldingen?');">
+                                          onsubmit="return confirm('Are you sure you want to delete this submission?');">
                                         <button type="submit"
                                                 class="w-full inline-flex justify-center rounded-full px-3 py-1.5
                                                        bg-rose-700 hover:bg-rose-800 text-white font-medium
                                                        transition active:scale-[0.97]">
-                                            Slett
+                                            Delete
                                         </button>
                                     </form>
                                 </div>
@@ -427,7 +427,7 @@
             });
 
             if (countEl) {
-                countEl.textContent = `Viser ${visible} av ${rows.length} innmeldinger`;
+                countEl.textContent = `Showing ${visible} of ${rows.length} submissions`;
             }
         }
 
