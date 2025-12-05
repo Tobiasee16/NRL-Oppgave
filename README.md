@@ -176,7 +176,7 @@ All tests passed succesfully, confirming that the domain logic behaves as expect
 
 ---
 
-## 🧪 Accessibility Testing (Wave)
+## 🌐 Accessibility Testing (Wave)
 
 To evaluate the accessibility of the application, we performed a WCAG-compliance check using WAVE browser extension. Wave reported minor improvements that could be made, but no critical accessibility barriers were detected.
 
