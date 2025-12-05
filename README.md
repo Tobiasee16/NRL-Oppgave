@@ -166,6 +166,16 @@ Default URL: https://localhost:5001
 
 ---
 
+## 🧪 Unit testing
+
+A seperate xUnit test project has been created to test the "ObstacleData" domain model. The tests verify that the model correctly validates data according to the specified requirements. The test project is located in its own branch "feature/enhetstesting" The tests can be wxecuted using:
+
+dotnet test WebApplication2.sln
+
+All tests passed succesfully, confirming that the domain logic behaves as expected.
+
+---
+
 ## 🔮 Future Enhancements
 
 Planned or suggested improvements:
