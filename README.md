@@ -102,7 +102,8 @@ CREATE TABLE IF NOT EXISTS obstacles (
     Latitude DOUBLE NULL,
     Longitude DOUBLE NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    Status VARCHAR(20) NOT NULL DEFAULT 'Pending'
+    Status VARCHAR(20) NOT NULL DEFAULT 'Pending',
+    SubmittedByUserId VARCHAR(255) NULL
 );
 
 ### DevOps / Infrastructure
@@ -162,6 +163,16 @@ Identity uses:
 dotnet run
 
 Default URL: https://localhost:5001
+
+---
+
+## 🧪 Unit testing
+
+A seperate xUnit test project has been created to test the "ObstacleData" domain model. The tests verify that the model correctly validates data according to the specified requirements. The test project is located in its own branch "feature/enhetstesting" The tests can be executed using:
+
+dotnet test WebApplication2.sln
+
+All tests passed succesfully, confirming that the domain logic behaves as expected.
 
 ---
 
