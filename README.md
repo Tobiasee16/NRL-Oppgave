@@ -19,19 +19,28 @@ This system was developed as part of a coursework project and includes:
 Users can submit reports of aviation obstacles via a structured form.  
 Features include:
 
+### Pilot
 - Registration form for obstacle data  
-- Overview of submitted data before saving  
-- Storage using EF Core and MariaDB  
-- Role: **Registerfører**
+- Overview of submitted data before saving
+- Can view their own reports 
+- Storage using EF Core and MariaDB
+- HeatMap 
+- Role: **Pilot**
 
 ### 🛠 Admin Panel
 Admins can:
+- Manage roles of registered users
+- Give role: Pilot
+- Give role: Registerfører
+- Clear roles of users
+- Role: **Admin**
 
+### Registerfører
 - View all obstacle submissions  
 - Approve or reject reports  
 - Manage data quality  
-- See the full database overview  
-- Role: **Admin**
+- See the full database overview
+- Role: **Registerfører**
 
 ### ✈️ Pilot View – Real-time Heatmap
 The pilot-facing section includes:
